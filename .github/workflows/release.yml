@@ -18,9 +18,9 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Update module.json download URL
+      - name: Update module.json download URL & version
         run: |
-          jq --arg url "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/module.zip" '.download = $url' module.json > tmp.json && mv tmp.json module.json
+          jq --arg url "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/module.zip" --arg ver "${{ steps.get_version.outputs.VERSION }}" '.download = $url | .version = ($ver | lstripstr("v"))' module.json > tmp.json && mv tmp.json module.json
 
       - name: Create Module Archive
         run: |
@@ -35,6 +35,7 @@ jobs:
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
           files: |
             module.zip
             module.json
@@ -42,6 +43,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Foundry VTT
+        if: ${{ secrets.FOUNDRY_PACKAGE_TOKEN != '' }}
+        continue-on-error: true
         uses: cs96and/FoundryVTT-release-package@v1
         with:
           package-token: ${{ secrets.FOUNDRY_PACKAGE_TOKEN }}
