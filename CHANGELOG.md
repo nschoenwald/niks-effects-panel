@@ -1,5 +1,10 @@
 # Changelog
 
+## 14.0.9
+
+### Added
+- Added a GitHub Action workflow for automatic module releases on GitHub release publication.
+
 ## 14.0.8
 
 ### Fixed
