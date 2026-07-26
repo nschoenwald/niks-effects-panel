@@ -43,8 +43,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Foundry VTT
-        if: ${{ secrets.FOUNDRY_PACKAGE_TOKEN != '' }}
-        continue-on-error: true
+        if: ${{ env.FOUNDRY_PACKAGE_TOKEN != '' }}
+        env:
+          FOUNDRY_PACKAGE_TOKEN: ${{ secrets.FOUNDRY_PACKAGE_TOKEN }}
         uses: cs96and/FoundryVTT-release-package@v1
         with:
           package-token: ${{ secrets.FOUNDRY_PACKAGE_TOKEN }}
