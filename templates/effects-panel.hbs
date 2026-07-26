@@ -1,0 +1,119 @@
+{{!-- Helper partial for effect items --}}
+{{#*inline "effect-item"}}
+    <div class="effect-item" data-effect-id="{{effect._id}}" style="height: {{itemSize}}px;">
+        <div class="effect-info">
+            <h1 class="effect-name">{{effect.name}}</h1>
+            {{#if canViewEffectDetails}}
+                {{#if effect.description}}
+                    <div class="effect-description">{{{effect.description}}}</div>
+                {{else}}
+                    <h2 class="effect-description-header">{{localize "EffectsPanel.FromParent" parent=effect.parent.name}}</h2>
+                    <div class="effect-description">{{{effect.parentDescription}}}</div>
+                {{/if}}
+
+                <div class="panel-tags">
+                    <div class="panel-tag panel-tag_primary">{{type}}</div>
+                    <div class="panel-tag panel-tag_secondary">{{effect.timeLabel}}</div>
+                    {{#if effect.flags.core.overlay}}
+                        <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Overlay"}}</div>
+                    {{/if}}
+                    {{#if disabled}}
+                        <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Disabled"}}</div>
+                    {{/if}}
+                    {{#if effect.parentDescription}}
+                        <div class="panel-tag panel-tag_alt">{{localize "EffectsPanel.FromParentItem"}}</div>
+                    {{/if}}
+                </div>
+            {{/if}}
+        </div>
+        <div
+            class="effect-icon-container {{type}} {{#if disabled}}effect-disabled{{/if}}"
+            style="height: {{iconSize}}px; width: {{iconSize}}px;"
+        >
+            <div class="icon"
+                 style="background-color: {{effect.tint.css}}; background-image: url('{{effect.img}}'); mask-image: url('{{effect.img}}'); -webkit-mask-image: url('{{effect.img}}'); height: {{iconSize}}px; width: {{iconSize}}px;">
+            </div>
+            {{#if showDurationOverlays}}
+                {{#if effect.duration.expired}}
+                    <i class="expired badge fas fa-clock" style="font-size: {{badgeSize}}px;"></i>
+                {{else if effect.isTemporary}}
+                    <i class="badge fas fa-clock" style="font-size: {{badgeSize}}px;"></i>
+                {{else}}
+                    <i class="unlimited badge fas fa-infinity" style="font-size: {{badgeSize}}px;"></i>
+                {{/if}}
+            {{/if}}
+        </div>
+    </div>
+{{/inline}}
+
+<section id="effects-panel" class="effect-panel">
+    {{#if canViewEffectsPanel}}
+        <div class="effects-panel-container">
+            {{!-- Temporary Effects --}}
+            {{#each temporaryEffects as |effect|}}
+                {{> effect-item
+                    effect=effect
+                    canViewEffectDetails=@root.canViewEffectDetails
+                    showDurationOverlays=@root.showDurationOverlays
+                    iconSize=@root.iconSize
+                    itemSize=@root.itemSize
+                    badgeSize=@root.badgeSize
+                    type="temporary"
+                }}
+            {{/each}}
+
+            {{#if (and separateTemporaryAndPassive temporaryEffects.length passiveEffects.length)}}
+                <hr style="width: {{iconSize}}px;" />
+            {{/if}}
+
+            {{!-- Passive Effects --}}
+            {{#each passiveEffects as |effect|}}
+                {{> effect-item
+                    effect=effect
+                    canViewEffectDetails=@root.canViewEffectDetails
+                    showDurationOverlays=@root.showDurationOverlays
+                    iconSize=@root.iconSize
+                    itemSize=@root.itemSize
+                    badgeSize=@root.badgeSize
+                    type="passive"
+                }}
+            {{/each}}
+
+            {{#if (and (or disabledTemporaryEffects.length disabledPassiveEffects.length) (or temporaryEffects.length passiveEffects.length))}}
+                <hr style="width: {{iconSize}}px;" />
+            {{/if}}
+
+            {{!-- Disabled Temporary Effects --}}
+            {{#each disabledTemporaryEffects as |effect|}}
+                {{> effect-item
+                    effect=effect
+                    canViewEffectDetails=@root.canViewEffectDetails
+                    showDurationOverlays=@root.showDurationOverlays
+                    iconSize=@root.iconSize
+                    itemSize=@root.itemSize
+                    badgeSize=@root.badgeSize
+                    type="temporary"
+                    disabled=true
+                }}
+            {{/each}}
+
+            {{#if (and separateTemporaryAndPassive disabledTemporaryEffects.length disabledPassiveEffects.length)}}
+                <hr style="width: {{iconSize}}px;" />
+            {{/if}}
+
+            {{!-- Disabled Passive Effects --}}
+            {{#each disabledPassiveEffects as |effect|}}
+                {{> effect-item
+                    effect=effect
+                    canViewEffectDetails=@root.canViewEffectDetails
+                    showDurationOverlays=@root.showDurationOverlays
+                    iconSize=@root.iconSize
+                    itemSize=@root.itemSize
+                    badgeSize=@root.badgeSize
+                    type="passive"
+                    disabled=true
+                }}
+            {{/each}}
+        </div>
+    {{/if}}
+</section>

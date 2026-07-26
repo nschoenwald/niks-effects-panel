@@ -1,0 +1,85 @@
+{
+    "EffectsPanel": {
+        "SettingPlayer": "Player",
+        "SettingTrustedPlayer": "Trusted Player",
+        "SettingAssistantGM": "Assistant GM",
+        "SettingGameMaster": "Game Master",
+        "SettingNone": "None",
+        "SettingDialog": "Dialog",
+        "SettingDelete": "Delete",
+        "SettingDisable": "Disable",
+
+        "SettingShowDisabledEffects": "Show Disabled Effects",
+        "SettingShowDisabledEffectsHint": "If enabled, disabled effects will be shown in the panel with a grey tint.",
+
+        "SettingShowPassiveEffects": "Show Passive Effects",
+        "SettingShowPassiveEffectsHint": "Controls when passive (non-temporary) effects are shown in the panel. 'If Always Visible' respects Foundry V14's per-effect 'Show Icon?' setting.",
+        "SettingPassiveModeNever": "Never",
+        "SettingPassiveModeAlwaysIcon": "If Always Visible",
+        "SettingPassiveModeAlways": "Always",
+
+        "SettingShowDurationOverlays": "Show Duration Overlays",
+        "SettingShowDurationOverlaysHint": "If enabled, an overlay icon will be shown over each effect to indicate its duration.",
+
+        "SettingSeparateTemporaryAndPassive": "Separate Temporary and Passive Effects",
+        "SettingSeparateTemporaryAndPassiveHint": "If enabled, temporary and passive effects will be separated by a horizontal line in the panel.",
+
+        "SettingIconSize": "Icon Size",
+        "SettingIconSizeHint": "This defines the size of the icons in the effects panel.",
+
+        "SettingDoubleClickBehavior": "Double-Click Behavior",
+        "SettingDoubleClickBehaviorHint": "This defines the behavior when double-clicking an effect. Shift+double-click always opens the effect sheet.",
+        "SettingRightClickBehavior": "Right-Click Behavior",
+        "SettingRightClickBehaviorHint": "This defines the behavior when right-clicking an effect.",
+        "SettingShiftRightClickBehavior": "Shift Right-Click Behavior",
+        "SettingShiftRightClickBehaviorHint": "This defines the behavior when shift right-clicking an effect.",
+
+        "SettingAllowRightClick": "Allow Right-Click",
+        "SettingAllowRightClickHint": "This defines the minimum permission level to execute the right-click behavior on an effect. Setting this to None will never allow right-clicking an effect.",
+        "SettingViewPermission": "View Permission",
+        "SettingViewPermissionHint": "This defines the minimum permission level to see the effects panel. Setting this to None will never show the effects panel.",
+        "SettingViewDetailsPermission": "View Details Permission",
+        "SettingViewDetailsPermissionHint": "This defines the minimum permission level to see the details of the effects in the panel such as the duration and description. Setting this to None will never show any details.",
+
+        "ItemEffectProtected": "This effect originates from an item and cannot be deleted. It has been toggled instead.",
+
+        "FromParent": "From {parent}",
+        "FromParentItem": "From Parent Item",
+
+        "Overlay": "Overlay",
+        "Disabled": "Disabled",
+
+        "Unlimited": "Unlimited",
+        "Expired": "Expired",
+
+        "OneYear": "1 year",
+        "OneWeek": "1 week",
+        "OneRound": "1 round",
+        "OneTurn": "1 turn",
+        "OneSecond": "1 second",
+
+        "ManyYears": "{years} years",
+        "ManyWeeks": "{weeks} weeks",
+        "ManyDays": "{days} days",
+        "ManyHours": "{hours} hours",
+        "ManyMinutes": "{minutes} minutes",
+        "ManyTurns": "{turns} turns",
+        "ManyRounds": "{rounds} rounds",
+        "ManySeconds": "{seconds} seconds",
+
+        "DeleteOrDisableEffect": "Delete or Disable Effect",
+        "DeleteOrDisableEffectContent": "Delete or disable {effect}",
+        "Delete": "Delete",
+        "Enable": "Enable",
+        "Disable": "Disable",
+
+        "EndOfTheRound": "End Of The Round",
+        "TurnEnd": "Turn End",
+        "TurnStart": "Turn Start",
+        "NextAttackRoll" : "Next Attack Roll",
+        "NextChallengeRoll" : "Next Challenge Roll",
+        "NextD20Roll": "Next D20 Roll",
+        "NextDamageRoll": "Next Damage Roll",
+        "RestComplete": "Rest Complete"
+    }
+}
