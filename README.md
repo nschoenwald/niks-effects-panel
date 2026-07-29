@@ -2,7 +2,6 @@
 
 [![Foundry VTT Version](https://img.shields.io/badge/foundry-v13%20%7C%20v14-orange)](https://foundryvtt.com/)
 [![Latest Release](https://img.shields.io/github/v/release/nschoenwald/niks-effects-panel?color=blue)](https://github.com/nschoenwald/niks-effects-panel/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Nik's Effects Panel** is a sleek, modern, and highly configurable module for **Foundry VTT** (supporting V13 & V14) that displays a floating panel of active effects for currently controlled tokens or assigned player characters.
 
@@ -23,24 +22,6 @@ Built on Foundry's modern **ApplicationV2** framework, it gives players and Game
 - **🖱️ Flexible Controls & Click Actions**: Configure custom behaviors for double-clicking, right-clicking, and shift-right-clicking (toggle disable/enable, prompt deletion dialog, or delete directly). Shift+Double-Click opens the underlying Active Effect sheet instantly.
 - **🔒 Granular Permission Controls**: Independent settings for View Panel, View Details/Descriptions, and Right-Click Interactions based on Foundry user roles (Player, Trusted Player, Assistant GM, GM).
 - **📌 Persistent & Clamped Dragging**: Reposition the panel vertically along the screen edge with automatic coordinate saving per user and viewport boundaries clamping.
-
----
-
-## 📦 Installation
-
-### Method 1: Manifest URL (Recommended)
-1. Open the **Foundry VTT** Configuration & Setup screen.
-2. Go to the **Add-on Modules** tab and click **Install Module**.
-3. Paste the following Manifest URL in the field at the bottom:
-   ```text
-   https://github.com/nschoenwald/niks-effects-panel/releases/latest/download/module.json
-   ```
-4. Click **Install**.
-
-### Method 2: Manual Installation
-1. Download the latest `module.zip` from the [Releases](https://github.com/nschoenwald/niks-effects-panel/releases) page.
-2. Extract the archive contents into your Foundry VTT user data directory under `Data/modules/niks-effects-panel`.
-3. Restart Foundry VTT and enable **Nik's Effects Panel** in your World Module Settings.
 
 ---
 
@@ -92,8 +73,22 @@ This module is based on and inspired by **[DFreds Effects Panel](https://github.
 
 ---
 
-## 📄 License
+## Other Modules by Nik
 
-Distributed under the [MIT License](LICENSE).
-Copyright (c) Derek Fredrickson.
+### 🎲 D&D 5e Specific
+* **[Nik's DnD5e Tweaks](https://github.com/nschoenwald/niks-dnd5e-tweaks)** – Consolidated collection of quality-of-life enhancements and combat automation tweaks for DnD5e.
 
+### ⚔️ Combat & Token Tools
+* **[Nik's Token Tags](https://github.com/nschoenwald/niks-token-tags)** – Automatically numbers duplicate combatant NPCs (A, B, C…) with color-coded letter overlays.
+* **[Nik's Shared NPC Initiative](https://github.com/nschoenwald/niks-shared-npc-initiative)** – Groups NPCs of the same type in combat so they share a single initiative roll.
+* **[Nik's Movement Control](https://github.com/nschoenwald/niks-movement-control)** – GM controls to toggle player movement and automatically restrict/allow movement on combat start and end.
+* **[Nik's Tiny Change Logs](https://github.com/nschoenwald/niks-tiny-changelogs)** – Compact, single-line chat messages logging token HP and Temp HP changes.
+
+### 🎲 Visuals & Display
+* **[Nik's Dynamic Roll Area](https://github.com/nschoenwald/niks-dynamic-roll-area)** – Dynamically restricts Dice So Nice 3D dice rolling area to exclude the sidebar / chat log across all screen resolutions and window sizes.
+
+### ⚙️ Utilities & System Management
+* **[Nik's Settings Locks](https://github.com/nschoenwald/niks-settings-locks)** – Soft-lock and hard-lock client settings and keybindings across all connected players.
+* **[Nik's Compendium Search Tweaks](https://github.com/nschoenwald/niks-compendium-search-tweaks)** – Configure which compendium packs are included or excluded from native sidebar search.
+* **[Nik's Show & Tell](https://github.com/nschoenwald/niks-show-and-tell)** – Share popout images to chat and paste image files directly into chat messages.
+* **[Nik's Zoom / Pan Options](https://github.com/nschoenwald/niks-zoom-pan-options)** – Touchpad and scroll wheel pan/zoom controls and canvas navigation enhancements.
