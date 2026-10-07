@@ -1,5 +1,13 @@
 # Changelog
 
+## 14.2.0
+
+### Fixed
+- **Aura Effects Deduplication**: Fixed an issue where the `aura-effects` module created duplicate effect icons on the originating token for self-applying auras.
+  - Automatically identifies downstream applied aura effects (`flags.auraeffects.fromAura`) originating from the active token or its items and suppresses the clone in favor of the primary source aura effect.
+  - Preserves full aura lifecycle actions (disabling or deleting the source effect properly updates aura regions and downstream recipients, and Shift+Double Click opens the complete Aura configuration sheet).
+  - Automatically deduplicates multiple identical applied aura effects on recipient tokens if redundant copies are received.
+
 ## 14.1.2
 
 ### Added

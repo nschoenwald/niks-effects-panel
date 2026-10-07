@@ -22,6 +22,7 @@ Built on Foundry's modern **ApplicationV2** framework, it gives players and Game
 - **🖱️ Flexible Controls & Click Actions**: Configure custom behaviors for double-clicking, right-clicking, and shift-right-clicking (toggle disable/enable, prompt deletion dialog, or delete directly). Shift+Double-Click opens the underlying Active Effect sheet instantly.
 - **🔒 Granular Permission Controls**: Independent settings for View Panel, View Details/Descriptions, and Right-Click Interactions based on Foundry user roles (Player, Trusted Player, Assistant GM, GM).
 - **📌 Persistent & Clamped Dragging**: Reposition the panel vertically along the screen edge with automatic coordinate saving per user and viewport boundaries clamping.
+- **🛡️ Aura Effects Compatibility**: Seamless deduplication for the `aura-effects` module, suppressing redundant self-applied duplicate effects on originating tokens while preserving master aura controls and downstream effects.
 
 ---
 

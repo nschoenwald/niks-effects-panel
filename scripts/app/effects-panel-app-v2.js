@@ -529,7 +529,66 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         for (const effect of actor?.allApplicableEffects() || []) {
             effects.push(effect);
         }
-        return effects;
+        return this.#deduplicateAuraEffects(effects, actor);
+    }
+
+    #deduplicateAuraEffects(effects, actor) {
+        if (!effects?.length) return [];
+
+        const sourceAuraUuids = new Set();
+        for (const effect of effects) {
+            if (effect.type === "auraeffects.aura") {
+                if (effect.uuid) sourceAuraUuids.add(effect.uuid);
+                if (effect.id) sourceAuraUuids.add(effect.id);
+            }
+        }
+
+        const actorUuid = actor?.uuid ?? "";
+        const tokenUuid = actor?.token?.uuid ?? "";
+        const seenAppliedAuraUuids = new Set();
+
+        return effects.filter((effect) => {
+            const auraSourceUuid = this.#getAuraSourceUuid(effect);
+            if (!auraSourceUuid) return true;
+
+            // Layer 2: Originating token deduplication
+            if (this.#isOriginatingAuraEffect(auraSourceUuid, sourceAuraUuids, actorUuid, tokenUuid, actor)) {
+                return false;
+            }
+
+            // Layer 3: Redundant applied aura deduplication on recipient
+            if (seenAppliedAuraUuids.has(auraSourceUuid)) {
+                return false;
+            }
+            seenAppliedAuraUuids.add(auraSourceUuid);
+
+            return true;
+        });
+    }
+
+    #getAuraSourceUuid(effect) {
+        const fromAura = effect.getFlag?.("auraeffects", "fromAura") ?? effect.flags?.auraeffects?.fromAura;
+        if (!fromAura) return null;
+        if (typeof fromAura === "string") return fromAura;
+        return effect.origin || null;
+    }
+
+    #isOriginatingAuraEffect(auraSourceUuid, sourceAuraUuids, actorUuid, tokenUuid, actor) {
+        if (sourceAuraUuids.has(auraSourceUuid)) return true;
+        if (actorUuid && auraSourceUuid.startsWith(actorUuid)) return true;
+        if (tokenUuid && auraSourceUuid.startsWith(tokenUuid)) return true;
+
+        try {
+            const sourceDoc = fromUuidSync(auraSourceUuid);
+            if (sourceDoc) {
+                const sourceActor = sourceDoc.actor ?? (sourceDoc.parent instanceof Actor ? sourceDoc.parent : sourceDoc.parent?.actor);
+                if (sourceActor && (sourceActor === actor || sourceActor.uuid === actorUuid)) return true;
+            }
+        } catch {
+            // Ignore fromUuidSync lookup errors
+        }
+
+        return false;
     }
 
     #getSourceName(effect) {
