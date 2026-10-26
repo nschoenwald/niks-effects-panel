@@ -1,4 +1,3 @@
-import Draggable from "../lib/draggable.js";
 import { Settings } from "../settings.js";
 import {
     MODULE_ID,
@@ -11,32 +10,39 @@ const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } =
     foundry.applications.api;
 const { TextEditor } = foundry.applications.ux;
 
+const DEFAULT_TOP = 12;
+const DRAG_THRESHOLD = 10;
+const SCREEN_MARGIN = 8;
+const DESCRIPTION_CACHE_LIMIT = 200;
+
 export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2) {
-    #settings;
-    #rootView;
-    #draggable;
+    #settings = new Settings();
     #resizeHandler;
     #documentClickHandler;
+    #dragMoveHandler;
+    #dragEndHandler;
 
     #currentShownEffectInfoId = null;
+    #showsTemporaryEffects = false;
+    #descriptionCache = new Map();
+    #drag = null;
+    #suppressNextClick = false;
 
     constructor(options = {}) {
         super(options);
         this.refresh = foundry.utils.debounce(this.render.bind(this), 100);
 
-        this.#settings = new Settings();
-        this.#rootView = $("<div>");
-        this.#resizeHandler = foundry.utils.debounce(this.#onWindowResize.bind(this), 200);
+        this.#resizeHandler = foundry.utils.debounce(() => this.#applyTop(), 200);
         this.#documentClickHandler = this.#onDocumentClick.bind(this);
+        this.#dragMoveHandler = this.#onDragMove.bind(this);
+        this.#dragEndHandler = this.#onDragEnd.bind(this);
     }
 
     static DEFAULT_OPTIONS = {
         id: "effects-panel",
         window: {
             frame: false,
-            minimizable: false,
-            resizable: false,
-            positioned: true,
+            positioned: false,
         },
     };
 
@@ -51,12 +57,16 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return this.#actor;
     }
 
+    /**
+     * Whether the panel currently shows effects whose duration labels depend on combat or world time.
+     * @returns {boolean}
+     */
+    get showsTemporaryEffects() {
+        return this.#showsTemporaryEffects;
+    }
+
     resetCurrentShownEffectInfoId() {
-        this.#currentShownEffectInfoId = null;
-        if (this.#rootView?.length) {
-            this.#rootView.find(".effect-info").hide();
-        }
-        this.#syncZIndex();
+        this.#hideInfo();
     }
 
     async _prepareContext(_options) {
@@ -65,49 +75,30 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         const disabledTemporaryEffects = [];
         const disabledPassiveEffects = [];
 
-        const effects = this.#actorEffects;
+        const showDisabledEffects = this.#settings.showDisabledEffects;
+        const passiveEffectMode = this.#settings.passiveEffectMode;
+
+        const isPassiveShown = (effect) =>
+            passiveEffectMode === PASSIVE_EFFECT_MODE.ALWAYS ||
+            (passiveEffectMode === PASSIVE_EFFECT_MODE.ALWAYS_ICON && effect.showIcon === 2);
+
+        const actor = this.#actor;
+        const effects = actor ? this.#getActorEffects(actor) : [];
 
         for (const effect of effects) {
-            effect.description = await TextEditor.enrichHTML(
-                game.i18n.localize(effect.description || ""),
-                { relativeTo: effect },
-            );
+            if (effect.isSuppressed) continue;
+            if (effect.disabled && !showDisabledEffects) continue;
+            if (!effect.isTemporary && !isPassiveShown(effect)) continue;
 
-            if (effect.parent && effect.parent instanceof Item) {
-                effect.parentDescription = await TextEditor.enrichHTML(
-                    game.i18n.localize(effect.parent.system?.description?.value ?? ""),
-                    { relativeTo: effect.parent },
-                );
-            }
-
-            if (effect.disabled && this.#settings.showDisabledEffects) {
-                if (effect.isTemporary) {
-                    disabledTemporaryEffects.push(effect);
-                } else {
-                    const mode = this.#settings.passiveEffectMode;
-                    if (
-                        mode === PASSIVE_EFFECT_MODE.ALWAYS ||
-                        (mode === PASSIVE_EFFECT_MODE.ALWAYS_ICON && effect.showIcon === 2)
-                    ) {
-                        disabledPassiveEffects.push(effect);
-                    }
-                }
-            }
-
-            if (!effect.disabled) {
-                if (effect.isTemporary) {
-                    temporaryEffects.push(effect);
-                } else {
-                    const mode = this.#settings.passiveEffectMode;
-                    if (
-                        mode === PASSIVE_EFFECT_MODE.ALWAYS ||
-                        (mode === PASSIVE_EFFECT_MODE.ALWAYS_ICON && effect.showIcon === 2)
-                    ) {
-                        passiveEffects.push(effect);
-                    }
-                }
+            const view = this.#toViewData(effect);
+            if (effect.disabled) {
+                (effect.isTemporary ? disabledTemporaryEffects : disabledPassiveEffects).push(view);
+            } else {
+                (effect.isTemporary ? temporaryEffects : passiveEffects).push(view);
             }
         }
+
+        this.#showsTemporaryEffects = temporaryEffects.length > 0 || disabledTemporaryEffects.length > 0;
 
         const iconSize = this.#settings.iconSize;
         const itemSize = iconSize + 8;
@@ -128,240 +119,265 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         };
     }
 
-    async _onFirstRender(_context, _options) {
-        this.#rootView = $(this.element);
+    /**
+     * Builds the plain data the template needs for one effect, instead of cloning the whole document.
+     * Descriptions are enriched later, when the effect's info overlay is opened.
+     */
+    #toViewData(effect) {
+        const parentItem = this.#isItemEffect(effect) ? effect.parent : null;
+        return {
+            id: effect.id,
+            name: this.#getEffectName(effect),
+            img: effect.img,
+            tint: effect.tint?.css ?? "",
+            isTemporary: effect.isTemporary,
+            expired: this.#isExpired(effect),
+            overlay: !!foundry.utils.getProperty(effect, "flags.core.overlay"),
+            timeLabel: this.#determineTimeLabel(effect),
+            hasDescription: !!effect.description,
+            parentName: parentItem?.name ?? "",
+            hasParentDescription: !!parentItem?.system?.description?.value,
+        };
+    }
+
+    /**
+     * Inserts the panel next to the sidebar, so it follows the sidebar, the camera dock and the UI scale.
+     */
+    _insertElement(element) {
+        const existing = document.getElementById(element.id);
+        if (existing) {
+            existing.replaceWith(element);
+            return;
+        }
+        const column = document.getElementById("ui-right-column-1") ?? document.body;
+        column.append(element);
+    }
+
+    async _onFirstRender(context, options) {
+        await super._onFirstRender(context, options);
+
+        // The root element survives re-renders, so these delegated listeners are bound once
+        this.element.addEventListener("click", this.#onClick.bind(this));
+        this.element.addEventListener("dblclick", this.#onDoubleClick.bind(this));
+        this.element.addEventListener("contextmenu", this.#onRightClick.bind(this));
+        this.element.addEventListener("keydown", this.#onKeyDown.bind(this));
+        this.element.addEventListener("pointerdown", this.#onPointerDown.bind(this));
+
+        window.addEventListener("resize", this.#resizeHandler);
+        document.addEventListener("click", this.#documentClickHandler);
     }
 
     async _onRender(context, options) {
         await super._onRender(context, options);
 
-        this.#initClickListeners();
-
-        const leftPosition = this.#getLeftPosition();
-        const panelHeight = this.element.offsetHeight || 42;
-        this.#draggable = new Draggable(this.element, {
-            limit: {
-                x: [leftPosition, leftPosition],
-                y: [0, Math.max(0, window.innerHeight - panelHeight)],
-            },
-            threshold: 10,
-            onDragEnd: (_element, _x, y, _event) => {
-                this.#syncZIndex();
-                game.user.setFlag(MODULE_ID, USER_FLAGS.TOP_POSITION, y);
-            },
-        });
-
-        this.#draggable.set({
-            left: leftPosition,
-            top: this.#getTopPosition(),
-        });
-
-        this.#safeSetPosition({
-            left: leftPosition,
-            top: this.#getTopPosition(),
-        });
-
-        window.removeEventListener("resize", this.#resizeHandler);
-        window.addEventListener("resize", this.#resizeHandler);
-
-        document.removeEventListener("click", this.#documentClickHandler);
-        document.addEventListener("click", this.#documentClickHandler);
+        this.#applyTop();
 
         if (this.#currentShownEffectInfoId) {
-            const $effectItem = this.#rootView.find(`[data-effect-id="${this.#currentShownEffectInfoId}"]`);
-            if ($effectItem.length) {
-                $effectItem.find(".effect-info").show();
+            const effectItem = this.#getEffectItemElement(this.#currentShownEffectInfoId);
+            if (effectItem) {
+                this.#showInfo(effectItem);
             } else {
                 this.#currentShownEffectInfoId = null;
             }
         }
-
-        this.#syncZIndex();
     }
 
-    _preClose(_options) {
-        this.#draggable?.destroy();
+    _onClose(options) {
+        super._onClose(options);
+        this.#endDrag();
         window.removeEventListener("resize", this.#resizeHandler);
         document.removeEventListener("click", this.#documentClickHandler);
-        return Promise.resolve();
     }
 
-    animateFromLeftPx() {
-        const leftPosition = this.#getLeftPosition();
-        this.#rootView.animate({ left: leftPosition }, { duration: 200 });
+    // Position & dragging
+
+    get #uiScale() {
+        const height = this.element?.offsetHeight;
+        if (!height) return 1;
+        return this.element.getBoundingClientRect().height / height || 1;
     }
 
-    #getLeftPosition() {
-        const isSidebarExpanded = document
-            .getElementById("sidebar-content")
-            ?.classList.contains("expanded");
-        const isWebrtcRight = ui.webrtc?.element?.classList.contains("right") ?? false;
-
-        const webrtcWidth = isWebrtcRight ? 300 : 0;
-        const { uiScale = 1 } = game.settings.get("core", "uiConfig") ?? {};
-
-        const panelWidth = $("#effects-panel").width() ?? 42;
-        const padding = 18;
-
-        const rightPosition = isSidebarExpanded
-            ? this.#getExpandedRightPosition({
-                padding,
-                webrtcWidth,
-                panelWidth,
-                uiScale,
-            })
-            : this.#getCollapsedRightPosition({
-                padding,
-                webrtcWidth,
-                panelWidth,
-                uiScale,
-            });
-        const leftPosition = window.innerWidth - rightPosition;
-
-        return leftPosition;
+    get #maxTop() {
+        const containerHeight = this.element?.parentElement?.clientHeight || window.innerHeight;
+        return Math.max(0, containerHeight - (this.element?.offsetHeight ?? 0));
     }
 
-    #getCollapsedRightPosition({ padding, webrtcWidth, panelWidth, uiScale }) {
-        const sidebarWidth = 48;
-        return (padding + sidebarWidth + webrtcWidth + panelWidth) * uiScale;
+    get #currentTop() {
+        return parseFloat(this.element?.style.top) || 0;
     }
 
-    #getExpandedRightPosition({ padding, webrtcWidth, panelWidth, uiScale }) {
-        const sidebarEl = document.getElementById("sidebar");
-        const expandedSidebarWidthPx = sidebarEl
-            ? window.getComputedStyle(sidebarEl).getPropertyValue("--sidebar-width") || "348px"
-            : "348px";
-        const expandedSidebarWidth = parseInt(expandedSidebarWidthPx.replace("px", ""), 10);
-
-        const sidebarScrollGutterPx = sidebarEl
-            ? window.getComputedStyle(sidebarEl).getPropertyValue("--sidebar-scroll-gutter") || "12px"
-            : "12px";
-        const sidebarScrollGutter = parseInt(sidebarScrollGutterPx.replace("px", ""), 10);
-
-        const sidebarTabsWidth = $("#sidebar-tabs").width() ?? 32;
-
-        return (
-            (padding +
-                expandedSidebarWidth +
-                webrtcWidth +
-                sidebarTabsWidth +
-                sidebarScrollGutter +
-                panelWidth) *
-            uiScale
-        );
+    #clampTop(top) {
+        return Math.min(Math.max(0, top), this.#maxTop);
     }
 
-    #getTopPosition() {
-        const topPosition = game.user.getFlag(MODULE_ID, USER_FLAGS.TOP_POSITION);
-        if (topPosition === undefined) {
-            game.user.setFlag(MODULE_ID, USER_FLAGS.TOP_POSITION, 12);
-        }
-
-        const raw = topPosition ?? 12;
-        const panelHeight = this.element?.offsetHeight || 42;
-        const maxTop = Math.max(0, window.innerHeight - panelHeight);
-        return Math.min(raw, maxTop);
+    #applyTop(top = game.user.getFlag(MODULE_ID, USER_FLAGS.TOP_POSITION) ?? DEFAULT_TOP) {
+        if (!this.element) return;
+        this.element.style.top = `${this.#clampTop(top)}px`;
     }
 
-    #syncZIndex() {
-        if (this.element) {
-            this.element.style.zIndex = this.#currentShownEffectInfoId ? "1000" : "";
-        }
+    #onPointerDown(event) {
+        this.#suppressNextClick = false;
+        if (event.button !== 0 || this.#drag) return;
+        if (!event.target.closest(".effect-icon-container")) return;
+
+        this.#drag = {
+            startY: event.clientY,
+            startTop: this.#currentTop,
+            scale: this.#uiScale,
+            dragging: false,
+        };
+        window.addEventListener("pointermove", this.#dragMoveHandler);
+        window.addEventListener("pointerup", this.#dragEndHandler);
+        window.addEventListener("pointercancel", this.#dragEndHandler);
     }
 
-    #safeSetPosition(position) {
-        if (!this.rendered || !this.element?.isConnected) return;
-        try {
-            this.setPosition(position);
-        } catch {
-            // Swallow errors from setPosition when element is in a bad state
+    #onDragMove(event) {
+        const drag = this.#drag;
+        if (!drag) return;
+
+        const deltaY = event.clientY - drag.startY;
+        if (!drag.dragging && Math.abs(deltaY) < DRAG_THRESHOLD) return;
+
+        drag.dragging = true;
+        this.element.classList.add("dragging");
+        this.#applyTop(drag.startTop + deltaY / drag.scale);
+    }
+
+    #onDragEnd(event) {
+        const drag = this.#drag;
+        this.#endDrag();
+        if (!drag?.dragging || event.type === "pointercancel") return;
+
+        // Releasing the mouse after a drag also fires a click, which must not toggle an effect's info
+        this.#suppressNextClick = true;
+        game.user.setFlag(MODULE_ID, USER_FLAGS.TOP_POSITION, Math.round(this.#currentTop));
+    }
+
+    #endDrag() {
+        this.#drag = null;
+        this.element?.classList.remove("dragging");
+        window.removeEventListener("pointermove", this.#dragMoveHandler);
+        window.removeEventListener("pointerup", this.#dragEndHandler);
+        window.removeEventListener("pointercancel", this.#dragEndHandler);
+    }
+
+    // Info overlay
+
+    #getEffectItemElement(effectId) {
+        return this.element?.querySelector(`.effect-item[data-effect-id="${CSS.escape(effectId)}"]`) ?? null;
+    }
+
+    #hideInfo() {
+        this.#currentShownEffectInfoId = null;
+        for (const info of this.element?.querySelectorAll(".effect-info.visible") ?? []) {
+            info.classList.remove("visible");
         }
     }
 
-    setPosition(position) {
-        if (!this.element?.isConnected) return this.position;
-        try {
-            return super.setPosition(position);
-        } catch {
-            return this.position;
+    #showInfo(effectItem) {
+        this.#hideInfo();
+        const info = effectItem.querySelector(".effect-info");
+        if (!info) return;
+
+        info.classList.add("visible");
+        this.#currentShownEffectInfoId = effectItem.dataset.effectId ?? null;
+        this.#fitInfo(info);
+        this.#populateDescription(effectItem);
+    }
+
+    #toggleInfo(effectItem) {
+        if (effectItem.querySelector(".effect-info.visible")) {
+            this.#hideInfo();
+        } else {
+            this.#showInfo(effectItem);
         }
     }
 
-    #setOverlayZIndex(_visible) {
-        this.#syncZIndex();
+    /**
+     * Moves the overlay up when it would run past the bottom of the screen.
+     */
+    #fitInfo(info) {
+        info.style.top = "";
+        const rect = info.getBoundingClientRect();
+        const overflow = rect.bottom - (window.innerHeight - SCREEN_MARGIN);
+        if (overflow <= 0) return;
+
+        const shift = Math.min(overflow, Math.max(0, rect.top - SCREEN_MARGIN));
+        info.style.top = `${-shift / this.#uiScale}px`;
     }
 
-    #onWindowResize() {
-        if (!this.rendered || !this.element?.isConnected) return;
+    async #populateDescription(effectItem) {
+        const container = effectItem.querySelector(".effect-description");
+        if (!container || container.dataset.loaded) return;
 
-        const leftPosition = this.#getLeftPosition();
+        const effect = this.#findEffect(effectItem.dataset.effectId);
+        if (!effect) return;
 
-        if (this.#draggable) {
-            this.#draggable.options.limit.x = [leftPosition, leftPosition];
-        }
+        const html = await this.#getDescriptionHTML(effect, container.dataset.source);
+        if (!container.isConnected) return;
 
-        this.#safeSetPosition({ left: leftPosition });
-        this.#rootView.css({ left: leftPosition });
+        container.innerHTML = html;
+        container.dataset.loaded = "true";
+
+        const info = effectItem.querySelector(".effect-info.visible");
+        if (info) this.#fitInfo(info);
+    }
+
+    async #getDescriptionHTML(effect, source) {
+        const fromParent = source === "parent" && this.#isItemEffect(effect);
+        const doc = fromParent ? effect.parent : effect;
+        const raw = fromParent ? doc.system?.description?.value : doc.description;
+
+        const key = `${doc.uuid}:${source}`;
+        const stamp = doc._stats?.modifiedTime ?? null;
+        const cached = this.#descriptionCache.get(key);
+        if (cached && cached.stamp === stamp) return cached.html;
+
+        const html = await TextEditor.enrichHTML(game.i18n.localize(raw ?? ""), { relativeTo: doc });
+
+        if (this.#descriptionCache.size >= DESCRIPTION_CACHE_LIMIT) this.#descriptionCache.clear();
+        this.#descriptionCache.set(key, { stamp, html });
+        return html;
     }
 
     #onDocumentClick(event) {
         if (!this.#currentShownEffectInfoId) return;
 
         const target = event.target;
-        if (!target) return;
+        if (!target || this.element?.contains(target)) return;
 
-        if (this.element?.contains(target)) return;
-
-        this.#rootView.find(".effect-info").hide();
-        this.#currentShownEffectInfoId = null;
-        this.#setOverlayZIndex(false);
+        this.#hideInfo();
     }
 
-    #initClickListeners() {
-        const icons = this.#rootView.find("div.effect-icon-container");
-        icons.on("click", this.#onIconClick.bind(this));
-        icons.on("contextmenu", this.#onIconRightClick.bind(this));
-        icons.on("dblclick", this.#onIconDoubleClick.bind(this));
-    }
+    // Effect interactions
 
-    #onIconClick(event) {
-        if (event.currentTarget === null) return;
-
-        const $target = $(event.currentTarget);
-        const $effectItem = $target.closest(".effect-item");
-        const $effectInfo = $effectItem.find(".effect-info");
-
-        const effectId = $effectItem.attr("data-effect-id");
-
-        if ($effectInfo.is(":visible")) {
-            $effectInfo.hide();
-            this.#currentShownEffectInfoId = null;
-        } else {
-            this.#rootView.find(".effect-info").hide();
-            $effectInfo.show();
-            this.#currentShownEffectInfoId = effectId ?? null;
+    #onClick(event) {
+        if (this.#suppressNextClick) {
+            this.#suppressNextClick = false;
+            return;
         }
 
-        this.#syncZIndex();
+        const effectItem = event.target.closest(".effect-icon-container")?.closest(".effect-item");
+        if (effectItem) this.#toggleInfo(effectItem);
     }
 
-    async #onIconRightClick(event) {
-        if (event.currentTarget === null) return;
+    #onKeyDown(event) {
+        if (event.key !== "Enter" && event.key !== " ") return;
 
-        this.#syncZIndex();
+        const effectItem = event.target.closest(".effect-icon-container")?.closest(".effect-item");
+        if (!effectItem) return;
+
+        event.preventDefault();
+        this.#toggleInfo(effectItem);
+    }
+
+    async #onRightClick(event) {
+        const effect = this.#getEffectFromEvent(event);
+        if (!effect) return;
+
+        event.preventDefault();
 
         if (game.user.role < this.#settings.allowRightClick) return;
-
-        const $target = $(event.currentTarget);
-        const $effectItem = $target.closest(".effect-item");
-
-        const actor = this.#actor;
-        const effects = this.#getActorEffects(actor);
-        const effectId = $effectItem.attr("data-effect-id");
-
-        const effect = effects.find((e) => e.id === effectId);
-
-        if (!effect) return;
 
         const clickBehavior = event.shiftKey
             ? this.#settings.shiftRightClickBehavior
@@ -375,46 +391,30 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         });
     }
 
-    async #onIconDoubleClick(event) {
-        if (event.currentTarget === null) return;
+    async #onDoubleClick(event) {
+        const effect = this.#getEffectFromEvent(event);
+        if (!effect) return;
 
-        this.#syncZIndex();
-
-        if (event instanceof MouseEvent && event.shiftKey) {
-            const $target = $(event.currentTarget);
-            const $effectItem = $target.closest(".effect-item");
-
-            const actor = this.#actor;
-            const effects = this.#getActorEffects(actor);
-            const effectId = $effectItem.attr("data-effect-id");
-
-            const effect = effects.find((e) => e.id === effectId);
-
-            if (!effect) return;
-
+        if (event.shiftKey) {
             effect.sheet?.render(true);
             return;
         }
-
-        const $target = $(event.currentTarget);
-        const $effectItem = $target.closest(".effect-item");
-
-        const actor = this.#actor;
-        const effects = this.#getActorEffects(actor);
-        const effectId = $effectItem.attr("data-effect-id");
-
-        const effect = effects.find((e) => e.id === effectId);
-
-        if (!effect) return;
-
-        const clickBehavior = this.#settings.doubleClickBehavior;
 
         await this.#handleEffectChange({
             eventX: event.clientX,
             eventY: event.clientY,
             effect,
-            clickBehavior,
+            clickBehavior: this.#settings.doubleClickBehavior,
         });
+    }
+
+    #getEffectFromEvent(event) {
+        const effectId = event.target.closest(".effect-icon-container")?.closest(".effect-item")?.dataset.effectId;
+        return effectId ? this.#findEffect(effectId) : null;
+    }
+
+    #findEffect(effectId) {
+        return this.#getActorEffects(this.#actor).find((e) => e.id === effectId) ?? null;
     }
 
     #isItemEffect(effect) {
@@ -422,15 +422,13 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     async #handleEffectChange({ eventX, eventY, effect, clickBehavior }) {
-        this.#rootView.find(".effect-info").hide();
-        this.#currentShownEffectInfoId = null;
-        this.#setOverlayZIndex(false);
+        this.#hideInfo();
 
         const isItemEffect = this.#isItemEffect(effect);
 
         if (clickBehavior === CLICK_BEHAVIOR.DIALOG) {
             const content = game.i18n.format("EffectsPanel.DeleteOrDisableEffectContent", {
-                effect: effect.name ?? effect.label ?? game.i18n.localize("EffectsPanel.UnknownEffect"),
+                effect: Handlebars.escapeExpression(this.#getEffectName(effect)),
             });
 
             await DialogV2.wait({
@@ -456,7 +454,6 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                                 return;
                             }
                             await effect.delete();
-                            this.refresh();
                         },
                     },
                     {
@@ -479,44 +476,16 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                 await effect.update({ disabled: !effect.disabled });
             } else {
                 await effect.delete();
-                this.refresh();
             }
         } else if (clickBehavior === CLICK_BEHAVIOR.DISABLE) {
             await effect.update({ disabled: !effect.disabled });
         }
     }
 
-    get #actorEffects() {
-        const actor = this.#actor;
+    // Effect data
 
-        if (!actor) return [];
-
-        const effects = this.#getActorEffects(actor);
-
-        return effects
-            .map((effect) => {
-                const src = this.#getSourceName(effect);
-                const effectData = effect.clone({}, { keepId: true });
-
-                const effectName = effect.name ?? effect.label ?? game.i18n.localize("EffectsPanel.UnknownEffect");
-                Object.defineProperty(effectData, "name", {
-                    value: effectName,
-                    configurable: true,
-                    enumerable: true,
-                });
-
-                effectData.infinite = effect.duration.value === Infinity;
-                effectData.timeLabel = this.#determineTimeLabel(effect);
-                effectData.src = src;
-
-                return effectData;
-            })
-            .sort((a, b) => {
-                if (a.isTemporary) return -1;
-                if (b.isTemporary) return 1;
-                return 0;
-            })
-            .filter((effectData) => !effectData.isSuppressed);
+    #getEffectName(effect) {
+        return effect.name || game.i18n.localize("EffectsPanel.UnknownEffect");
     }
 
     get #actor() {
@@ -525,10 +494,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     #getActorEffects(actor) {
-        const effects = [];
-        for (const effect of actor?.allApplicableEffects() || []) {
-            effects.push(effect);
-        }
+        const effects = Array.from(actor?.allApplicableEffects() ?? []);
         return this.#deduplicateAuraEffects(effects, actor);
     }
 
@@ -591,17 +557,6 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return false;
     }
 
-    #getSourceName(effect) {
-        if (!effect.origin) return null;
-        try {
-            const name = fromUuidSync(effect.origin)?.name;
-            if (name === undefined) return null;
-            return name;
-        } catch {
-            return null;
-        }
-    }
-
     #determineTimeLabel(effect) {
         if (game.system.id === "demonlord") {
             const dlResult = this.#handleDemonLordRemainingTime(effect);
@@ -613,8 +568,14 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         }
 
         const label = effect.duration.label;
-        if (label && label !== "None") {
+        if (label && !this.#isNoneLabel(label)) {
             return label;
+        }
+
+        // V13 leaves round/turn durations unlabeled outside of combat. V14 warns when rounds/turns are read.
+        if (game.release.generation < 14 && typeof effect._getDurationLabel === "function") {
+            const { rounds, turns } = effect.duration;
+            if (rounds || turns) return effect._getDurationLabel(rounds ?? 0, turns ?? 0);
         }
 
         const value = effect.duration.value;
@@ -626,16 +587,38 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return game.i18n.localize("EffectsPanel.Unlimited");
     }
 
+    /**
+     * V14 flags expired effects, V13 only tracks the remaining time.
+     */
+    #isExpired(effect) {
+        const duration = effect.duration;
+        if (!duration) return false;
+        if (typeof duration.expired === "boolean") return duration.expired;
+        return duration.type !== "none" && Number.isFinite(duration.remaining) && duration.remaining <= 0;
+    }
+
+    /**
+     * Foundry labels effects without a duration with its own, translated "None".
+     */
+    #isNoneLabel(label) {
+        return label === "None" || label === game.i18n.localize("COMMON.None") || label === game.i18n.localize("None");
+    }
+
     #handleDemonLordRemainingTime(effect) {
-        let tokenName;
         const specialDuration = foundry.utils.getProperty(
             effect,
             "flags.demonlord.specialDuration",
         );
         if (specialDuration !== "None" && specialDuration !== undefined) {
-            tokenName = fromUuidSync(
-                effect.origin?.substring(0, effect.origin.search(".Actor.")) ?? "",
-            )?.name;
+            const getTokenName = () => {
+                const actorIndex = effect.origin?.indexOf(".Actor.") ?? -1;
+                if (actorIndex < 0) return "";
+                try {
+                    return fromUuidSync(effect.origin.substring(0, actorIndex))?.name ?? "";
+                } catch {
+                    return "";
+                }
+            };
             switch (specialDuration) {
                 case "EndOfTheRound":
                     return game.i18n.localize("EffectsPanel.EndOfTheRound");
@@ -644,9 +627,9 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                 case "NextChallengeRoll":
                     return game.i18n.localize("EffectsPanel.NextChallengeRoll");
                 case "TurnEndSource":
-                    return game.i18n.localize("EffectsPanel.TurnEnd") + ` [${tokenName}]`;
+                    return game.i18n.localize("EffectsPanel.TurnEnd") + ` [${getTokenName()}]`;
                 case "TurnStartSource":
-                    return game.i18n.localize("EffectsPanel.TurnStart") + ` [${tokenName}]`;
+                    return game.i18n.localize("EffectsPanel.TurnStart") + ` [${getTokenName()}]`;
                 case "TurnEnd":
                     return game.i18n.localize("EffectsPanel.TurnEnd");
                 case "TurnStart":

@@ -7,8 +7,11 @@ export const CrudTokens = {
             panel?.resetCurrentShownEffectInfoId();
             panel?.refresh();
         });
-        Hooks.on("updateToken", () => {
-            getEffectsPanel()?.refresh();
+        Hooks.on("updateToken", (tokenDoc) => {
+            const panel = getEffectsPanel();
+            if (!panel?.actor || tokenDoc.actor === panel.actor) {
+                panel?.refresh();
+            }
         });
     },
 };

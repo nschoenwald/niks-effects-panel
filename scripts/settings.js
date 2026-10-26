@@ -1,4 +1,4 @@
-import { MODULE_ID, CLICK_BEHAVIOR, PASSIVE_EFFECT_MODE } from "./constants.js";
+import { MODULE_ID, CLICK_BEHAVIOR, PASSIVE_EFFECT_MODE, ROLE_NONE } from "./constants.js";
 import { getEffectsPanel } from "./utils/gets.js";
 
 export class Settings {
@@ -23,7 +23,7 @@ export class Settings {
             [CONST.USER_ROLES.TRUSTED]: game.i18n.localize("EffectsPanel.SettingTrustedPlayer"),
             [CONST.USER_ROLES.ASSISTANT]: game.i18n.localize("EffectsPanel.SettingAssistantGM"),
             [CONST.USER_ROLES.GAMEMASTER]: game.i18n.localize("EffectsPanel.SettingGameMaster"),
-            5: game.i18n.localize("EffectsPanel.SettingNone"),
+            [ROLE_NONE]: game.i18n.localize("EffectsPanel.SettingNone"),
         };
 
         const clickBehaviors = {
@@ -141,7 +141,7 @@ export class Settings {
             config: true,
             default: CONST.USER_ROLES.PLAYER,
             choices: userRoles,
-            type: String,
+            type: Number,
             onChange: () => getEffectsPanel()?.refresh(),
         });
 
@@ -152,7 +152,7 @@ export class Settings {
             config: true,
             default: CONST.USER_ROLES.PLAYER,
             choices: userRoles,
-            type: String,
+            type: Number,
             onChange: () => getEffectsPanel()?.refresh(),
         });
 
@@ -163,7 +163,7 @@ export class Settings {
             config: true,
             default: CONST.USER_ROLES.PLAYER,
             choices: userRoles,
-            type: String,
+            type: Number,
             onChange: () => getEffectsPanel()?.refresh(),
         });
     }
@@ -244,7 +244,7 @@ export class Settings {
      * @returns {number}
      */
     get allowRightClick() {
-        return parseInt(game.settings.get(MODULE_ID, this.#ALLOW_RIGHT_CLICK));
+        return game.settings.get(MODULE_ID, this.#ALLOW_RIGHT_CLICK);
     }
 
     /**
@@ -252,7 +252,7 @@ export class Settings {
      * @returns {number}
      */
     get viewPermission() {
-        return parseInt(game.settings.get(MODULE_ID, this.#VIEW_PERMISSION));
+        return game.settings.get(MODULE_ID, this.#VIEW_PERMISSION);
     }
 
     /**
@@ -260,6 +260,6 @@ export class Settings {
      * @returns {number}
      */
     get viewDetailsPermission() {
-        return parseInt(game.settings.get(MODULE_ID, this.#VIEW_DETAILS_PERMISSION));
+        return game.settings.get(MODULE_ID, this.#VIEW_DETAILS_PERMISSION);
     }
 }

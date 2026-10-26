@@ -46,26 +46,13 @@
         "FromParent": "From {parent}",
         "FromParentItem": "From Parent Item",
 
+        "Temporary": "Temporary",
+        "Passive": "Passive",
         "Overlay": "Overlay",
         "Disabled": "Disabled",
 
         "Unlimited": "Unlimited",
-        "Expired": "Expired",
-
-        "OneYear": "1 year",
-        "OneWeek": "1 week",
-        "OneRound": "1 round",
-        "OneTurn": "1 turn",
-        "OneSecond": "1 second",
-
-        "ManyYears": "{years} years",
-        "ManyWeeks": "{weeks} weeks",
-        "ManyDays": "{days} days",
-        "ManyHours": "{hours} hours",
-        "ManyMinutes": "{minutes} minutes",
-        "ManyTurns": "{turns} turns",
-        "ManyRounds": "{rounds} rounds",
-        "ManySeconds": "{seconds} seconds",
+        "UnknownEffect": "Unknown Effect",
 
         "DeleteOrDisableEffect": "Delete or Disable Effect",
         "DeleteOrDisableEffectContent": "Delete or disable {effect}",
