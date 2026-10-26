@@ -1,76 +1,64 @@
 # Nik's Effects Panel
 
-[![Foundry VTT Version](https://img.shields.io/badge/foundry-v13%20%7C%20v14-orange)](https://foundryvtt.com/)
-[![Latest Release](https://img.shields.io/github/v/release/nschoenwald/niks-effects-panel?color=blue)](https://github.com/nschoenwald/niks-effects-panel/releases)
+[![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-V13%E2%80%93V14-orange.svg)](https://foundryvtt.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/nschoenwald/niks-effects-panel?color=purple)](https://github.com/nschoenwald/niks-effects-panel/releases/latest)
 
-**Nik's Effects Panel** is a sleek, modern, and highly configurable module for **Foundry VTT** (supporting V13 & V14) that displays a floating panel of active effects for currently controlled tokens or assigned player characters.
-
-Built on Foundry's modern **ApplicationV2** framework, it gives players and Game Masters instant visual status tracking, rich detailed tooltips, and rapid effect management right on the canvas.
-
----
-
-## 🌟 Key Features
-
-- **⚡ Real-Time Active Effect Panel**: Automatically displays active effects (temporary, passive, disabled) for selected tokens, fallback to assigned user character if no token is controlled.
-- **🔍 Rich Info Tooltips**: Single-click any effect icon to pop open a detailed overlay containing formatted HTML descriptions, duration readouts (rounds, turns, seconds, or expiration states), and parent item origins.
-- **🎨 Visual Customization**:
-  - **Icon Resizing**: Dynamically scale icon sizes from `16px` to `100px` with auto-adjusting badges.
-  - **Disabled Effects**: High-contrast desaturation combined with a subtle diagonal stripe overlay for clear visual feedback.
-  - **Passive Effect Modes**: Filter passive effects (`Never`, `If Always Visible` [V14 `showIcon` integration], or `Always`).
-  - **Effect Grouping**: Optional horizontal divider line to separate temporary and passive effects.
-  - **Duration Badges**: Toggle overlay badges indicating remaining rounds, turns, or time.
-- **🖱️ Flexible Controls & Click Actions**: Configure custom behaviors for double-clicking, right-clicking, and shift-right-clicking (toggle disable/enable, prompt deletion dialog, or delete directly). Shift+Double-Click opens the underlying Active Effect sheet instantly.
-- **🔒 Granular Permission Controls**: Independent settings for View Panel, View Details/Descriptions, and Right-Click Interactions based on Foundry user roles (Player, Trusted Player, Assistant GM, GM).
-- **📌 Persistent & Clamped Dragging**: Reposition the panel vertically along the screen edge with automatic coordinate saving per user and viewport boundaries clamping.
-- **🛡️ Aura Effects Compatibility**: Seamless deduplication for the `aura-effects` module, suppressing redundant self-applied duplicate effects on originating tokens while preserving master aura controls and downstream effects.
+A floating panel next to the sidebar that shows the active effects of the selected token in **Foundry VTT v13 and v14**. Check, inspect, disable or remove effects without opening the character sheet.
 
 ---
 
-## 🎮 Usage & Controls
+## ✨ Features
 
-Once enabled, selecting a token (or controlling an actor) displays the panel along the edge of the screen.
-
-| Mouse Action | Default Behavior | Configurable |
-| :--- | :--- | :---: |
-| **Left Click** | Open / close rich effect description popover | ❌ |
-| **Double Click** | Toggle effect state (Enable / Disable) | ✅ |
-| **Right Click** | Open Delete / Disable confirmation dialog | ✅ |
-| **Shift + Right Click** | Immediately delete effect | ✅ |
-| **Shift + Double Click** | Open Active Effect configuration sheet | ❌ |
-| **Drag & Drop** | Drag vertical handle to reposition panel | ❌ |
-
----
-
-## ⚙️ Configuration Settings
-
-Customize panel appearance and control rights in **Game Settings ➔ Module Settings ➔ Nik's Effects Panel**:
-
-| Setting | Scope | Default | Description |
-| :--- | :---: | :---: | :--- |
-| **Show Disabled Effects** | Client | `Enabled` | Shows disabled/inactive effects with a desaturated frame and overlay pattern. |
-| **Show Passive Effects** | Client | `If Always Visible` | Controls passive effect visibility (`Never`, `If Always Visible`, `Always`). |
-| **Show Duration Overlays** | Client | `Enabled` | Shows overlay icons/badges for effect durations. |
-| **Separate Temporary and Passive** | Client | `Enabled` | Renders a horizontal divider line between temporary and passive effects. |
-| **Icon Size** | Client | `42px` | Sets panel effect icon size (range: 16px - 100px). |
-| **Double-Click Behavior** | Client | `Disable` | Action triggered on double-click (`Disable`, `Delete`, `Dialog`). |
-| **Right-Click Behavior** | Client | `Dialog` | Action triggered on right-click (`Dialog`, `Delete`, `Disable`). |
-| **Shift Right-Click Behavior** | Client | `Delete` | Action triggered on Shift + Right-Click (`Delete`, `Disable`, `Dialog`). |
-| **Allow Right-Click** | World | `Player` | Minimum user role required to interact via right-click. |
-| **View Permission** | World | `Player` | Minimum user role required to see the effects panel. |
-| **View Details Permission** | World | `Player` | Minimum user role required to expand detailed tooltips/descriptions. |
+- **Follows your selection**: Shows the selected token's effects. With nothing selected, it shows your own character.
+- **Effect details**: Hover an icon to see the effect's name. Click it to see its description, its remaining duration and the item it comes from. Click it again, or anywhere else, to close it.
+- **Quick actions**:
+  - Double-click an effect to disable or enable it.
+  - Right-click an effect to choose between deleting and disabling it.
+  - <kbd>Shift</kbd> + right-click to delete it right away.
+  - <kbd>Shift</kbd> + double-click to open the effect's sheet.
+  - Effects that come from an item are never deleted. They are disabled instead.
+- **Temporary and passive effects**: Temporary effects have square icons, passive effects round ones. A line between them keeps the two groups apart.
+- **Disabled effects**: Shown greyed out with a striped overlay at the bottom of the panel.
+- **Duration badges**: A small clock or infinity sign on each icon shows at a glance whether an effect runs out. Expired effects get an orange clock.
+- **Stays next to the sidebar**: The panel follows the sidebar when it opens or closes, the camera dock and the UI scale. Drag it up or down to move it. Each player's position is remembered.
+- **Keyboard**: Reach effect icons with <kbd>Tab</kbd> and press <kbd>Enter</kbd> or <kbd>Space</kbd> to open their details.
 
 ---
 
-## 🛠️ Compatibility & Requirements
+## ⚙️ Settings
 
-- **Foundry VTT**: Minimum Version **13**, Verified Version **14** (ApplicationV2)
-- **Game Systems**: System-agnostic (optimized for D&D 5e 5.2+ and generic active effect workflows)
+- **For each player**:
+  - Icon size (16 to 100 px).
+  - Whether to show disabled effects, duration badges and the line between temporary and passive effects.
+  - Which passive effects to show: **Never**, **If Always Visible** (respects the effect's "Show Icon?" setting in Foundry v14) or **Always**.
+  - What double-click, right-click and <kbd>Shift</kbd> + right-click do: open the dialog, delete or disable.
+- **For GMs**: The minimum role needed to see the panel, to see effect details and to use right-click actions. Set any of them to **None** to turn the feature off for everyone.
 
 ---
 
-## 🙏 Credits & Acknowledgments
+## 🤝 Compatibility
 
-This module is based on and inspired by **[DFreds Effects Panel](https://github.com/DFreds/dfreds-effects-panel)** created by **Derek Fredrickson (DFreds)**. We are immensely grateful for their foundational work creating the original effects panel concept for Foundry VTT.
+- **Game systems**: Works with any system that uses Foundry's active effects.
+- **[Aura Effects](https://foundryvtt.com/packages/auraeffects)**: A token with an aura shows the aura once, not once more for the copy it applies to itself. Tokens inside someone else's aura show it once, even if they received it more than once.
+- **Shadow of the Demon Lord**: Special durations such as "End of the Round" or "Next Attack Roll" are shown as the effect's duration.
+
+---
+
+## 🌐 Languages
+
+🇬🇧 English
+
+---
+
+## 📦 Installation
+
+In Foundry, go to **Add-on Modules → Install Module** and paste this manifest URL:
+```
+https://github.com/nschoenwald/niks-effects-panel/releases/latest/download/module.json
+```
+
+Requires **Foundry VTT v13** or **v14**.
 
 ---
 
@@ -94,3 +82,11 @@ This module is based on and inspired by **[DFreds Effects Panel](https://github.
 * **[Nik's Compendium Search Tweaks](https://github.com/nschoenwald/niks-compendium-search-tweaks)** – Configure which compendium packs are included or excluded from native sidebar search.
 * **[Nik's Show & Tell](https://github.com/nschoenwald/niks-show-and-tell)** – Share popout images to chat and paste image files directly into chat messages.
 * **[Nik's Zoom / Pan Options](https://github.com/nschoenwald/niks-zoom-pan-options)** – Touchpad and scroll wheel pan/zoom controls and canvas navigation enhancements.
+
+---
+
+## 📜 License
+
+MIT License. See [LICENSE](LICENSE).
+
+Based on **[DFreds Effects Panel](https://github.com/DFreds/dfreds-effects-panel)** by Derek Fredrickson (DFreds), who created the original effects panel for Foundry VTT. Not affiliated with Foundry Gaming LLC.

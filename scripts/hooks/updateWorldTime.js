@@ -3,7 +3,8 @@ import { getEffectsPanel } from "../utils/gets.js";
 export const UpdateWorldTime = {
     listen: () => {
         Hooks.on("updateWorldTime", () => {
-            getEffectsPanel()?.refresh();
+            const panel = getEffectsPanel();
+            if (panel?.showsTemporaryEffects) panel.refresh();
         });
     },
 };

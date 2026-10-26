@@ -2,14 +2,17 @@ import { getEffectsPanel } from "../utils/gets.js";
 
 export const CrudActiveEffects = {
     listen: () => {
-        Hooks.on("createActiveEffect", () => {
-            getEffectsPanel()?.refresh();
-        });
-        Hooks.on("updateActiveEffect", () => {
-            getEffectsPanel()?.refresh();
-        });
-        Hooks.on("deleteActiveEffect", () => {
-            getEffectsPanel()?.refresh();
-        });
+        const handleEffectChange = (effect) => {
+            const panel = getEffectsPanel();
+            if (!panel) return;
+            const owner = effect.parent instanceof Actor ? effect.parent : effect.parent?.actor;
+            if (!panel.actor || owner === panel.actor) {
+                panel.refresh();
+            }
+        };
+
+        Hooks.on("createActiveEffect", handleEffectChange);
+        Hooks.on("updateActiveEffect", handleEffectChange);
+        Hooks.on("deleteActiveEffect", handleEffectChange);
     },
 };

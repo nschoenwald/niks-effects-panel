@@ -1,26 +1,26 @@
 {{!-- Helper partial for effect items --}}
 {{#*inline "effect-item"}}
-    <div class="effect-item" data-effect-id="{{effect._id}}" style="height: {{itemSize}}px;">
+    <div class="effect-item" data-effect-id="{{effect.id}}" style="height: {{itemSize}}px;">
         <div class="effect-info">
             <h1 class="effect-name">{{effect.name}}</h1>
             {{#if canViewEffectDetails}}
-                {{#if effect.description}}
-                    <div class="effect-description">{{{effect.description}}}</div>
-                {{else}}
-                    <h2 class="effect-description-header">{{localize "EffectsPanel.FromParent" parent=effect.parent.name}}</h2>
-                    <div class="effect-description">{{{effect.parentDescription}}}</div>
+                {{#if effect.hasDescription}}
+                    <div class="effect-description" data-source="effect"></div>
+                {{else if effect.hasParentDescription}}
+                    <h2 class="effect-description-header">{{localize "EffectsPanel.FromParent" parent=effect.parentName}}</h2>
+                    <div class="effect-description" data-source="parent"></div>
                 {{/if}}
 
                 <div class="panel-tags">
-                    <div class="panel-tag panel-tag_primary">{{type}}</div>
+                    <div class="panel-tag panel-tag_primary">{{localize typeLabel}}</div>
                     <div class="panel-tag panel-tag_secondary">{{effect.timeLabel}}</div>
-                    {{#if effect.flags.core.overlay}}
+                    {{#if effect.overlay}}
                         <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Overlay"}}</div>
                     {{/if}}
                     {{#if disabled}}
                         <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Disabled"}}</div>
                     {{/if}}
-                    {{#if effect.parentDescription}}
+                    {{#if effect.hasParentDescription}}
                         <div class="panel-tag panel-tag_alt">{{localize "EffectsPanel.FromParentItem"}}</div>
                     {{/if}}
                 </div>
@@ -28,13 +28,18 @@
         </div>
         <div
             class="effect-icon-container {{type}} {{#if disabled}}effect-disabled{{/if}}"
+            role="button"
+            tabindex="0"
+            aria-label="{{effect.name}}"
+            data-tooltip-text="{{effect.name}}"
+            data-tooltip-direction="LEFT"
             style="height: {{iconSize}}px; width: {{iconSize}}px;"
         >
             <div class="icon"
-                 style="background-color: {{effect.tint.css}}; background-image: url('{{effect.img}}'); mask-image: url('{{effect.img}}'); -webkit-mask-image: url('{{effect.img}}'); height: {{iconSize}}px; width: {{iconSize}}px;">
+                 style="background-color: {{effect.tint}}; background-image: url('{{effect.img}}'); mask-image: url('{{effect.img}}'); -webkit-mask-image: url('{{effect.img}}'); height: {{iconSize}}px; width: {{iconSize}}px;">
             </div>
             {{#if showDurationOverlays}}
-                {{#if effect.duration.expired}}
+                {{#if effect.expired}}
                     <i class="expired badge fas fa-clock" style="font-size: {{badgeSize}}px;"></i>
                 {{else if effect.isTemporary}}
                     <i class="badge fas fa-clock" style="font-size: {{badgeSize}}px;"></i>
@@ -46,7 +51,7 @@
     </div>
 {{/inline}}
 
-<section id="effects-panel" class="effect-panel">
+<section class="effect-panel">
     {{#if canViewEffectsPanel}}
         <div class="effects-panel-container">
             {{!-- Temporary Effects --}}
@@ -59,6 +64,7 @@
                     itemSize=@root.itemSize
                     badgeSize=@root.badgeSize
                     type="temporary"
+                    typeLabel="EffectsPanel.Temporary"
                 }}
             {{/each}}
 
@@ -76,6 +82,7 @@
                     itemSize=@root.itemSize
                     badgeSize=@root.badgeSize
                     type="passive"
+                    typeLabel="EffectsPanel.Passive"
                 }}
             {{/each}}
 
@@ -93,6 +100,7 @@
                     itemSize=@root.itemSize
                     badgeSize=@root.badgeSize
                     type="temporary"
+                    typeLabel="EffectsPanel.Temporary"
                     disabled=true
                 }}
             {{/each}}
@@ -111,6 +119,7 @@
                     itemSize=@root.itemSize
                     badgeSize=@root.badgeSize
                     type="passive"
+                    typeLabel="EffectsPanel.Passive"
                     disabled=true
                 }}
             {{/each}}

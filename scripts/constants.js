@@ -12,6 +12,9 @@ export const PASSIVE_EFFECT_MODE = {
     ALWAYS: "always",
 };
 
+/** Role setting value that lets no user through, one above Game Master */
+export const ROLE_NONE = CONST.USER_ROLES.GAMEMASTER + 1;
+
 export const USER_FLAGS = {
     TOP_POSITION: "topPosition",
 };

@@ -1,6 +1,15 @@
+/* Lives in #ui-right-column-1: align-self places it against the sidebar, top is set by the module */
 #effects-panel {
     position: absolute;
-    z-index: 10;
+    top: 12px;
+    align-self: flex-end;
+    pointer-events: auto;
+    user-select: none;
+}
+
+#effects-panel.dragging,
+#effects-panel.dragging .effect-icon-container {
+    cursor: grabbing;
 }
 
 #effects-panel-content .effects-panel-container {
@@ -34,8 +43,13 @@
     right: 100%;
     top: 0;
     z-index: 100;
-    max-height: calc(100vh - 20px);
+    max-height: calc((100vh - 16px) / var(--ui-scale, 1));
     overflow-y: auto;
+    user-select: text;
+}
+
+#effects-panel-content .effects-panel-container .effect-item .effect-info.visible {
+    display: block;
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .effect-name {
@@ -95,10 +109,6 @@
     background-color: #786452;
 }
 
-#effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag_material {
-    background-color: #666;
-}
-
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container {
     aspect-ratio: 1;
     align-items: center;
@@ -115,6 +125,11 @@
     width: 42px;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     cursor: pointer;
+}
+
+#effects-panel-content .effects-panel-container .effect-item .effect-icon-container:focus-visible {
+    outline: 2px solid var(--color-warm-2, orange);
+    outline-offset: 3px;
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container:hover {
