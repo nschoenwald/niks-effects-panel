@@ -4,7 +4,7 @@ export const CrudTokens = {
     listen: () => {
         Hooks.on("deleteToken", () => {
             const panel = getEffectsPanel();
-            panel?.resetCurrentShownEffectInfoId();
+            panel?.hideInfo();
             panel?.refresh();
         });
         Hooks.on("updateToken", (tokenDoc) => {

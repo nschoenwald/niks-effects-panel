@@ -34,8 +34,8 @@
         "SettingShiftRightClickBehavior": "Shift Right-Click Behavior",
         "SettingShiftRightClickBehaviorHint": "This defines the behavior when shift right-clicking an effect.",
 
-        "SettingAllowRightClick": "Allow Right-Click",
-        "SettingAllowRightClickHint": "This defines the minimum permission level to execute the right-click behavior on an effect. Setting this to None will never allow right-clicking an effect.",
+        "SettingAllowRightClick": "Allow Click Actions",
+        "SettingAllowRightClickHint": "This defines the minimum permission level to execute the right-click and double-click behavior on an effect. Setting this to None will never allow these actions.",
         "SettingViewPermission": "View Permission",
         "SettingViewPermissionHint": "This defines the minimum permission level to see the effects panel. Setting this to None will never show the effects panel.",
         "SettingViewDetailsPermission": "View Details Permission",

@@ -101,7 +101,6 @@ export class Settings {
             default: CLICK_BEHAVIOR.DISABLE,
             choices: clickBehaviors,
             type: String,
-            onChange: () => getEffectsPanel()?.refresh(),
         });
 
         game.settings.register(MODULE_ID, this.#RIGHT_CLICK_BEHAVIOR, {
@@ -112,7 +111,6 @@ export class Settings {
             default: CLICK_BEHAVIOR.DIALOG,
             choices: clickBehaviors,
             type: String,
-            onChange: () => getEffectsPanel()?.refresh(),
         });
 
         game.settings.register(MODULE_ID, this.#SHIFT_RIGHT_CLICK_BEHAVIOR, {
@@ -123,7 +121,6 @@ export class Settings {
             default: CLICK_BEHAVIOR.DELETE,
             choices: clickBehaviors,
             type: String,
-            onChange: () => getEffectsPanel()?.refresh(),
         });
 
         game.settings.register(MODULE_ID, this.#ALLOW_RIGHT_CLICK, {
@@ -134,7 +131,6 @@ export class Settings {
             default: CONST.USER_ROLES.PLAYER,
             choices: userRoles,
             type: Number,
-            onChange: () => getEffectsPanel()?.refresh(),
         });
 
         game.settings.register(MODULE_ID, this.#VIEW_PERMISSION, {

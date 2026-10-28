@@ -19,7 +19,6 @@
 
 #effects-panel-content .effects-panel-container hr {
     align-self: end;
-    width: 42px;
 }
 
 #effects-panel-content .effects-panel-container .effect-item {
@@ -90,7 +89,6 @@
     line-height: 1;
     padding: 8px;
     text-transform: uppercase;
-    background-color: hsl(235, 28.5%, 37.8%);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag_primary {
@@ -112,8 +110,6 @@
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container {
     aspect-ratio: 1;
     align-items: center;
-    background-repeat: no-repeat;
-    background-size: contain;
     border: 1px solid rgba(0, 0, 0, 0.5);
     box-shadow: 0 0 0 1px silver, 0 0 0 2px gray, inset 0 0 4px rgba(0, 0, 0, 0.5);
     color: transparent;
@@ -121,8 +117,6 @@
     justify-content: center;
     margin: 2px 0;
     position: relative;
-    height: 42px;
-    width: 42px;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     cursor: pointer;
 }

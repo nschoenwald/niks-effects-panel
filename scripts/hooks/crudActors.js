@@ -5,7 +5,7 @@ export const CrudActors = {
         Hooks.on("deleteActor", (actor) => {
             const panel = getEffectsPanel();
             if (!panel?.actor || panel.actor.id === actor.id) {
-                panel?.resetCurrentShownEffectInfoId();
+                panel?.hideInfo();
             }
             panel?.refresh();
         });

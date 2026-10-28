@@ -33,7 +33,7 @@ A floating panel next to the sidebar that shows the active effects of the select
   - Whether to show disabled effects, duration badges and the line between temporary and passive effects.
   - Which passive effects to show: **Never**, **If Always Visible** (respects the effect's "Show Icon?" setting) or **Always**.
   - What double-click, right-click and <kbd>Shift</kbd> + right-click do: open the dialog, delete or disable.
-- **For GMs**: The minimum role needed to see the panel, to see effect details and to use right-click actions. Set any of them to **None** to turn the feature off for everyone.
+- **For GMs**: The minimum role needed to see the panel, to see effect details and to use right-click and double-click actions. Set any of them to **None** to turn the feature off for everyone.
 
 ---
 

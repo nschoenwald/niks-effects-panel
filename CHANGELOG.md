@@ -7,6 +7,19 @@ All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are docume
 - **Foundry v13 Support**:
   - The module now requires Foundry v14. Foundry v13 users can keep using [14.3.0](https://github.com/nschoenwald/niks-effects-panel/releases/tag/14.3.0).
   - Removed the code that only existed to run on v13: the passive effect fallback, the round/turn duration labels outside of combat and the expired-clock workaround.
+- **Code Cleanup**:
+  - Removed unreachable code and unused styles.
+  - Changing click or permission settings no longer redraws the panel when it isn't needed.
+
+### Changed
+- **Allow Click Actions**:
+  - The "Allow Right-Click" setting is now called "Allow Click Actions" and also applies to double-click. Players below the chosen role can no longer delete or disable effects by double-clicking. Shift + double-click still opens the effect sheet.
+
+### Fixed
+- **Panel Without Aura Effects**:
+  - Fixed the panel failing to show for tokens with effects when the Aura Effects module isn't active.
+- **Expired Effects**:
+  - Effects whose time has run out stay in the panel with the orange expired clock, instead of disappearing. You can now remove them from the panel.
 
 ## [14.3.0] - 2026-10-26
 ### Added
