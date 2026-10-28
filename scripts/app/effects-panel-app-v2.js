@@ -428,7 +428,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (clickBehavior === CLICK_BEHAVIOR.DIALOG) {
             const content = game.i18n.format("EffectsPanel.DeleteOrDisableEffectContent", {
-                effect: Handlebars.escapeExpression(this.#getEffectName(effect)),
+                effect: foundry.utils.escapeHTML(this.#getEffectName(effect)),
             });
 
             await DialogV2.wait({
