@@ -7,7 +7,7 @@ export const CanvasReady = {
         Hooks.on("canvasReady", () => {
             let effectsPanel = getEffectsPanel();
             if (effectsPanel) {
-                effectsPanel.resetCurrentShownEffectInfoId();
+                effectsPanel.hideInfo();
                 effectsPanel.render(true);
             } else {
                 effectsPanel = new EffectsPanelAppV2();

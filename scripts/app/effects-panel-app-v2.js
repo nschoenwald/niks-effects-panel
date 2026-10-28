@@ -65,10 +65,6 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return this.#showsTemporaryEffects;
     }
 
-    resetCurrentShownEffectInfoId() {
-        this.#hideInfo();
-    }
-
     async _prepareContext(_options) {
         const temporaryEffects = [];
         const passiveEffects = [];
@@ -80,13 +76,14 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
 
         const isPassiveShown = (effect) =>
             passiveEffectMode === PASSIVE_EFFECT_MODE.ALWAYS ||
-            (passiveEffectMode === PASSIVE_EFFECT_MODE.ALWAYS_ICON && effect.showIcon === 2);
+            (passiveEffectMode === PASSIVE_EFFECT_MODE.ALWAYS_ICON && effect.showIcon === CONST.ACTIVE_EFFECT_SHOW_ICON.ALWAYS);
 
         const actor = this.#actor;
         const effects = actor ? this.#getActorEffects(actor) : [];
 
         for (const effect of effects) {
-            if (effect.isSuppressed) continue;
+            // V14 also counts expired effects as suppressed, but those stay visible with the expired clock
+            if (effect.isSuppressed && !effect.duration.expired) continue;
             if (effect.disabled && !showDisabledEffects) continue;
             if (!effect.isTemporary && !isPassiveShown(effect)) continue;
 
@@ -267,7 +264,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return this.element?.querySelector(`.effect-item[data-effect-id="${CSS.escape(effectId)}"]`) ?? null;
     }
 
-    #hideInfo() {
+    hideInfo() {
         this.#currentShownEffectInfoId = null;
         for (const info of this.element?.querySelectorAll(".effect-info.visible") ?? []) {
             info.classList.remove("visible");
@@ -275,7 +272,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     #showInfo(effectItem) {
-        this.#hideInfo();
+        this.hideInfo();
         const info = effectItem.querySelector(".effect-info");
         if (!info) return;
 
@@ -287,7 +284,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
 
     #toggleInfo(effectItem) {
         if (effectItem.querySelector(".effect-info.visible")) {
-            this.#hideInfo();
+            this.hideInfo();
         } else {
             this.#showInfo(effectItem);
         }
@@ -346,7 +343,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         const target = event.target;
         if (!target || this.element?.contains(target)) return;
 
-        this.#hideInfo();
+        this.hideInfo();
     }
 
     // Effect interactions
@@ -400,6 +397,8 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             return;
         }
 
+        if (game.user.role < this.#settings.allowRightClick) return;
+
         await this.#handleEffectChange({
             eventX: event.clientX,
             eventY: event.clientY,
@@ -422,7 +421,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     async #handleEffectChange({ eventX, eventY, effect, clickBehavior }) {
-        this.#hideInfo();
+        this.hideInfo();
 
         const isItemEffect = this.#isItemEffect(effect);
 
@@ -449,10 +448,6 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                         icon: "fa-solid fa-trash",
                         disabled: isItemEffect,
                         callback: async () => {
-                            if (isItemEffect) {
-                                ui.notifications.info(game.i18n.localize("EffectsPanel.ItemEffectProtected"));
-                                return;
-                            }
                             await effect.delete();
                         },
                     },
@@ -533,7 +528,8 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     #getAuraSourceUuid(effect) {
-        const fromAura = effect.getFlag?.("auraeffects", "fromAura") ?? effect.flags?.auraeffects?.fromAura;
+        // getFlag throws when the Aura Effects module is not active
+        const fromAura = effect.flags?.auraeffects?.fromAura;
         if (!fromAura) return null;
         if (typeof fromAura === "string") return fromAura;
         return effect.origin || null;
@@ -563,19 +559,9 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             if (dlResult) return dlResult;
         }
 
-        if (effect.duration.value === Infinity) {
-            return game.i18n.localize("EffectsPanel.Unlimited");
-        }
-
         const label = effect.duration.label;
         if (label && !this.#isNoneLabel(label)) {
             return label;
-        }
-
-        const value = effect.duration.value;
-        const units = effect.duration.units;
-        if (value !== undefined && value !== null && units) {
-            return `${value} ${units}`;
         }
 
         return game.i18n.localize("EffectsPanel.Unlimited");
@@ -585,7 +571,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
      * Foundry labels effects without a duration with its own, translated "None".
      */
     #isNoneLabel(label) {
-        return label === "None" || label === game.i18n.localize("COMMON.None") || label === game.i18n.localize("None");
+        return label === "None" || label === game.i18n.localize("COMMON.None");
     }
 
     #handleDemonLordRemainingTime(effect) {
