@@ -131,7 +131,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             img: effect.img,
             tint: effect.tint?.css ?? "",
             isTemporary: effect.isTemporary,
-            expired: this.#isExpired(effect),
+            expired: effect.duration?.expired === true,
             overlay: !!foundry.utils.getProperty(effect, "flags.core.overlay"),
             timeLabel: this.#determineTimeLabel(effect),
             hasDescription: !!effect.description,
@@ -572,12 +572,6 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             return label;
         }
 
-        // V13 leaves round/turn durations unlabeled outside of combat. V14 warns when rounds/turns are read.
-        if (game.release.generation < 14 && typeof effect._getDurationLabel === "function") {
-            const { rounds, turns } = effect.duration;
-            if (rounds || turns) return effect._getDurationLabel(rounds ?? 0, turns ?? 0);
-        }
-
         const value = effect.duration.value;
         const units = effect.duration.units;
         if (value !== undefined && value !== null && units) {
@@ -585,16 +579,6 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         }
 
         return game.i18n.localize("EffectsPanel.Unlimited");
-    }
-
-    /**
-     * V14 flags expired effects, V13 only tracks the remaining time.
-     */
-    #isExpired(effect) {
-        const duration = effect.duration;
-        if (!duration) return false;
-        if (typeof duration.expired === "boolean") return duration.expired;
-        return duration.type !== "none" && Number.isFinite(duration.remaining) && duration.remaining <= 0;
     }
 
     /**

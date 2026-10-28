@@ -44,24 +44,16 @@ export class Settings {
 
         const passiveEffectModes = {
             [PASSIVE_EFFECT_MODE.NEVER]: game.i18n.localize("EffectsPanel.SettingPassiveModeNever"),
+            [PASSIVE_EFFECT_MODE.ALWAYS_ICON]: game.i18n.localize("EffectsPanel.SettingPassiveModeAlwaysIcon"),
+            [PASSIVE_EFFECT_MODE.ALWAYS]: game.i18n.localize("EffectsPanel.SettingPassiveModeAlways"),
         };
-
-        if (game.release.generation >= 14) {
-            passiveEffectModes[PASSIVE_EFFECT_MODE.ALWAYS_ICON] = game.i18n.localize(
-                "EffectsPanel.SettingPassiveModeAlwaysIcon",
-            );
-        }
-
-        passiveEffectModes[PASSIVE_EFFECT_MODE.ALWAYS] = game.i18n.localize(
-            "EffectsPanel.SettingPassiveModeAlways",
-        );
 
         game.settings.register(MODULE_ID, this.#SHOW_PASSIVE_EFFECTS, {
             name: "EffectsPanel.SettingShowPassiveEffects",
             hint: "EffectsPanel.SettingShowPassiveEffectsHint",
             scope: "client",
             config: true,
-            default: game.release.generation >= 14 ? PASSIVE_EFFECT_MODE.ALWAYS_ICON : PASSIVE_EFFECT_MODE.ALWAYS,
+            default: PASSIVE_EFFECT_MODE.ALWAYS_ICON,
             choices: passiveEffectModes,
             type: String,
             onChange: () => getEffectsPanel()?.refresh(),
@@ -214,13 +206,7 @@ export class Settings {
      * @returns {string}
      */
     get passiveEffectMode() {
-        const mode = game.settings.get(MODULE_ID, this.#SHOW_PASSIVE_EFFECTS);
-
-        if (mode === PASSIVE_EFFECT_MODE.ALWAYS_ICON && game.release.generation < 14) {
-            return PASSIVE_EFFECT_MODE.ALWAYS;
-        }
-
-        return mode;
+        return game.settings.get(MODULE_ID, this.#SHOW_PASSIVE_EFFECTS);
     }
 
     /**

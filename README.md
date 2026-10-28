@@ -1,10 +1,10 @@
 # Nik's Effects Panel
 
-[![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-V13%E2%80%93V14-orange.svg)](https://foundryvtt.com)
+[![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-V14-orange.svg)](https://foundryvtt.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/nschoenwald/niks-effects-panel?color=purple)](https://github.com/nschoenwald/niks-effects-panel/releases/latest)
 
-A floating panel next to the sidebar that shows the active effects of the selected token in **Foundry VTT v13 and v14**. Check, inspect, disable or remove effects without opening the character sheet.
+A floating panel next to the sidebar that shows the active effects of the selected token in **Foundry VTT v14**. Check, inspect, disable or remove effects without opening the character sheet.
 
 ---
 
@@ -31,7 +31,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 - **For each player**:
   - Icon size (16 to 100 px).
   - Whether to show disabled effects, duration badges and the line between temporary and passive effects.
-  - Which passive effects to show: **Never**, **If Always Visible** (respects the effect's "Show Icon?" setting in Foundry v14) or **Always**.
+  - Which passive effects to show: **Never**, **If Always Visible** (respects the effect's "Show Icon?" setting) or **Always**.
   - What double-click, right-click and <kbd>Shift</kbd> + right-click do: open the dialog, delete or disable.
 - **For GMs**: The minimum role needed to see the panel, to see effect details and to use right-click actions. Set any of them to **None** to turn the feature off for everyone.
 
@@ -58,7 +58,7 @@ In Foundry, go to **Add-on Modules → Install Module** and paste this manifest 
 https://github.com/nschoenwald/niks-effects-panel/releases/latest/download/module.json
 ```
 
-Requires **Foundry VTT v13** or **v14**.
+Requires **Foundry VTT v14**. The last version for v13 is [14.3.0](https://github.com/nschoenwald/niks-effects-panel/releases/tag/14.3.0).
 
 ---
 

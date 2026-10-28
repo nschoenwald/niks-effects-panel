@@ -13,7 +13,7 @@
         "SettingShowDisabledEffectsHint": "If enabled, disabled effects will be shown in the panel with a grey tint.",
 
         "SettingShowPassiveEffects": "Show Passive Effects",
-        "SettingShowPassiveEffectsHint": "Controls when passive (non-temporary) effects are shown in the panel. 'If Always Visible' respects Foundry V14's per-effect 'Show Icon?' setting.",
+        "SettingShowPassiveEffectsHint": "Controls when passive (non-temporary) effects are shown in the panel. 'If Always Visible' respects each effect's 'Show Icon?' setting.",
         "SettingPassiveModeNever": "Never",
         "SettingPassiveModeAlwaysIcon": "If Always Visible",
         "SettingPassiveModeAlways": "Always",
