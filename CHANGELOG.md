@@ -2,6 +2,12 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.4.0] - 2026-10-28
+### Removed
+- **Foundry v13 Support**:
+  - The module now requires Foundry v14. Foundry v13 users can keep using [14.3.0](https://github.com/nschoenwald/niks-effects-panel/releases/tag/14.3.0).
+  - Removed the code that only existed to run on v13: the passive effect fallback, the round/turn duration labels outside of combat and the expired-clock workaround.
+
 ## [14.3.0] - 2026-10-26
 ### Added
 - **Effect Names on Hover**:
