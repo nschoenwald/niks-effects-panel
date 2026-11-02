@@ -9,7 +9,8 @@
   "version": "14.4.0",
   "compatibility": {
     "minimum": "14",
-    "verified": "14"
+    "verified": "14",
+    "maximum": "14"
   },
   "authors": [
     {
