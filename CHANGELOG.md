@@ -2,6 +2,12 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.5.0] - 2026-11-09
+### Changed
+- **Conditions and Concentration**:
+  - Conditions and concentration can no longer be disabled from the panel, only deleted. A click action set to disable deletes them instead, and the right-click dialog only offers to delete them.
+  - Conditions that are already disabled can still be enabled again.
+
 ## [14.4.0] - 2026-10-28
 ### Removed
 - **Foundry v13 Support**:

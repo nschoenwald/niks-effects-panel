@@ -2,3 +2,9 @@
 package-lock.json
 package.json
 eslint.config.js
+
+# AI translations without human review: kept locally, never shipped
+/lang-unreviewed/
+
+# Internal technical changelog
+CHANGELOG_internal.md

@@ -420,10 +420,23 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return !!(effect.parent && effect.parent instanceof Item);
     }
 
+    /**
+     * Conditions and concentration: effects on the actor that carry a registered status effect.
+     * Concentration counts because the dnd5e concentration effect carries the "concentrating" status.
+     * Item effects are excluded, since they can't be deleted and toggling is their only option.
+     */
+    #isStatusEffect(effect) {
+        if (this.#isItemEffect(effect)) return false;
+        const statusIds = new Set(CONFIG.statusEffects.map((s) => s.id));
+        return effect.statuses.some((id) => statusIds.has(id));
+    }
+
     async #handleEffectChange({ eventX, eventY, effect, clickBehavior }) {
         this.hideInfo();
 
         const isItemEffect = this.#isItemEffect(effect);
+        // Conditions can only be deleted. A condition that is already disabled may still be enabled again.
+        const canDisable = effect.disabled || !this.#isStatusEffect(effect);
 
         if (clickBehavior === CLICK_BEHAVIOR.DIALOG) {
             const content = game.i18n.format("EffectsPanel.DeleteOrDisableEffectContent", {
@@ -457,6 +470,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                             ? game.i18n.localize("EffectsPanel.Enable")
                             : game.i18n.localize("EffectsPanel.Disable"),
                         icon: effect.disabled ? "fas fa-check" : "fas fa-close",
+                        disabled: !canDisable,
                         callback: async () => {
                             await effect.update({
                                 disabled: !effect.disabled,
@@ -473,7 +487,12 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                 await effect.delete();
             }
         } else if (clickBehavior === CLICK_BEHAVIOR.DISABLE) {
-            await effect.update({ disabled: !effect.disabled });
+            if (canDisable) {
+                await effect.update({ disabled: !effect.disabled });
+            } else {
+                ui.notifications.info(game.i18n.localize("EffectsPanel.StatusEffectProtected"));
+                await effect.delete();
+            }
         }
     }
 

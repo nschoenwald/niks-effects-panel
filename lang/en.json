@@ -42,6 +42,7 @@
         "SettingViewDetailsPermissionHint": "This defines the minimum permission level to see the details of the effects in the panel such as the duration and description. Setting this to None will never show any details.",
 
         "ItemEffectProtected": "This effect originates from an item and cannot be deleted. It has been toggled instead.",
+        "StatusEffectProtected": "Conditions and concentration can't be disabled. The effect has been deleted instead.",
 
         "FromParent": "From {parent}",
         "FromParentItem": "From Parent Item",

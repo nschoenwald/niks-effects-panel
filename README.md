@@ -18,6 +18,7 @@ A floating panel next to the sidebar that shows the active effects of the select
   - <kbd>Shift</kbd> + right-click to delete it right away.
   - <kbd>Shift</kbd> + double-click to open the effect's sheet.
   - Effects that come from an item are never deleted. They are disabled instead.
+  - Conditions and concentration are never disabled. They are deleted instead, and the dialog only offers to delete them.
 - **Temporary and passive effects**: Temporary effects have square icons, passive effects round ones. A line between them keeps the two groups apart.
 - **Disabled effects**: Shown greyed out with a striped overlay at the bottom of the panel.
 - **Duration badges**: A small clock or infinity sign on each icon shows at a glance whether an effect runs out. Expired effects get an orange clock.
