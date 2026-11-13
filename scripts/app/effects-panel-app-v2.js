@@ -439,6 +439,9 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         const canDisable = effect.disabled || !this.#isStatusEffect(effect);
 
         if (clickBehavior === CLICK_BEHAVIOR.DIALOG) {
+            const canRestart = effect.duration?.expired === true;
+            // A third button needs more room
+            const width = canRestart ? 360 : 300;
             const content = game.i18n.format("EffectsPanel.DeleteOrDisableEffectContent", {
                 effect: foundry.utils.escapeHTML(this.#getEffectName(effect)),
             });
@@ -449,9 +452,9 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                     controls: [],
                 },
                 position: {
-                    width: 300,
+                    width,
                     top: eventY + 20,
-                    left: eventX - 300 - 42,
+                    left: eventX - width - 42,
                 },
                 content: `<p>${content}?</p>`,
                 buttons: [
@@ -477,6 +480,17 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                             });
                         },
                     },
+                    // Expired effects can start their duration over
+                    ...(canRestart
+                        ? [{
+                            action: "restart",
+                            label: game.i18n.localize("EffectsPanel.Restart"),
+                            icon: "fa-solid fa-arrow-rotate-right",
+                            callback: async () => {
+                                await this.#restartDuration(effect);
+                            },
+                        }]
+                        : []),
                 ],
             });
         } else if (clickBehavior === CLICK_BEHAVIOR.DELETE) {
@@ -494,6 +508,17 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                 await effect.delete();
             }
         }
+    }
+
+    /**
+     * Start an expired effect's duration over from now. Foundry measures the remaining duration from the effect's
+     * start, so a new start (current time, combat, round and turn) gives it its original duration back. Clearing
+     * `duration.expired` makes it active again, and the update registers it for expiry tracking once more.
+     * @param {ActiveEffect} effect
+     */
+    async #restartDuration(effect) {
+        const start = effect.constructor.getEffectStart();
+        await effect.update({ start, "duration.expired": false });
     }
 
     // Effect data

@@ -14,7 +14,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 - **Effect details**: Hover an icon to see the effect's name. Click it to see its description, its remaining duration and the item it comes from. Click it again, or anywhere else, to close it.
 - **Quick actions**:
   - Double-click an effect to disable or enable it.
-  - Right-click an effect to choose between deleting and disabling it.
+  - Right-click an effect to choose between deleting and disabling it. For an expired effect, the dialog also offers **Restart**, which starts its duration over as if it had just been applied.
   - <kbd>Shift</kbd> + right-click to delete it right away.
   - <kbd>Shift</kbd> + double-click to open the effect's sheet.
   - Effects that come from an item are never deleted. They are disabled instead.

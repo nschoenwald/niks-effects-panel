@@ -2,6 +2,11 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.6.0] - 2026-11-13
+### Added
+- **Restart Expired Effects**:
+  - Right-clicking an expired effect now also offers **Restart**. It starts the effect's duration over from now, so it works again for its full duration, without using the item again or editing the effect.
+
 ## [14.5.0] - 2026-11-09
 ### Changed
 - **Conditions and Concentration**:
