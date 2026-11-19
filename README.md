@@ -20,8 +20,8 @@ A floating panel next to the sidebar that shows the active effects of the select
   - Effects that come from an item are never deleted. They are disabled instead.
   - Conditions and concentration are never disabled. They are deleted instead, and the dialog only offers to delete them.
 - **Temporary and passive effects**: Temporary effects have square icons, passive effects round ones. A line between them keeps the two groups apart.
-- **Disabled effects**: Shown greyed out with a striped overlay at the bottom of the panel.
-- **Duration badges**: A small clock or infinity sign on each icon shows at a glance whether an effect runs out. Expired effects get an orange clock.
+- **Disabled and expired effects**: Shown greyed out with a striped overlay at the bottom of the panel. Expired effects also get an orange clock and an **Expired** tag in their details. Both can be hidden in the settings.
+- **Duration badges**: A small clock or infinity sign on each icon shows at a glance whether an effect runs out.
 - **Stays next to the sidebar**: The panel follows the sidebar when it opens or closes, the camera dock and the UI scale. Drag it up or down to move it. Each player's position is remembered.
 - **Keyboard**: Reach effect icons with <kbd>Tab</kbd> and press <kbd>Enter</kbd> or <kbd>Space</kbd> to open their details.
 
@@ -31,7 +31,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 
 - **For each player**:
   - Icon size (16 to 100 px).
-  - Whether to show disabled effects, duration badges and the line between temporary and passive effects.
+  - Whether to show disabled and expired effects, duration badges and the line between temporary and passive effects.
   - Which passive effects to show: **Never**, **If Always Visible** (respects the effect's "Show Icon?" setting) or **Always**.
   - What double-click, right-click and <kbd>Shift</kbd> + right-click do: open the dialog, delete or disable.
 - **For GMs**: The minimum role needed to see the panel, to see effect details and to use right-click and double-click actions. Set any of them to **None** to turn the feature off for everyone.

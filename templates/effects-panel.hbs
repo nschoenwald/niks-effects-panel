@@ -17,8 +17,11 @@
                     {{#if effect.overlay}}
                         <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Overlay"}}</div>
                     {{/if}}
-                    {{#if disabled}}
+                    {{#if effect.disabled}}
                         <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Disabled"}}</div>
+                    {{/if}}
+                    {{#if effect.expired}}
+                        <div class="panel-tag panel-tag_tertiary">{{localize "EffectsPanel.Expired"}}</div>
                     {{/if}}
                     {{#if effect.hasParentDescription}}
                         <div class="panel-tag panel-tag_alt">{{localize "EffectsPanel.FromParentItem"}}</div>
@@ -27,7 +30,7 @@
             {{/if}}
         </div>
         <div
-            class="effect-icon-container {{type}} {{#if disabled}}effect-disabled{{/if}}"
+            class="effect-icon-container {{type}} {{#if inactive}}effect-disabled{{/if}}"
             role="button"
             tabindex="0"
             aria-label="{{effect.name}}"
@@ -90,7 +93,7 @@
                 <hr style="width: {{iconSize}}px;" />
             {{/if}}
 
-            {{!-- Disabled Temporary Effects --}}
+            {{!-- Disabled and Expired Temporary Effects --}}
             {{#each disabledTemporaryEffects as |effect|}}
                 {{> effect-item
                     effect=effect
@@ -101,7 +104,7 @@
                     badgeSize=@root.badgeSize
                     type="temporary"
                     typeLabel="EffectsPanel.Temporary"
-                    disabled=true
+                    inactive=true
                 }}
             {{/each}}
 
@@ -109,7 +112,7 @@
                 <hr style="width: {{iconSize}}px;" />
             {{/if}}
 
-            {{!-- Disabled Passive Effects --}}
+            {{!-- Disabled and Expired Passive Effects --}}
             {{#each disabledPassiveEffects as |effect|}}
                 {{> effect-item
                     effect=effect
@@ -120,7 +123,7 @@
                     badgeSize=@root.badgeSize
                     type="passive"
                     typeLabel="EffectsPanel.Passive"
-                    disabled=true
+                    inactive=true
                 }}
             {{/each}}
         </div>

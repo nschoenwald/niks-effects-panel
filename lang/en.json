@@ -9,8 +9,8 @@
         "SettingDelete": "Delete",
         "SettingDisable": "Disable",
 
-        "SettingShowDisabledEffects": "Show Disabled Effects",
-        "SettingShowDisabledEffectsHint": "If enabled, disabled effects will be shown in the panel with a grey tint.",
+        "SettingShowDisabledEffects": "Show Disabled and Expired Effects",
+        "SettingShowDisabledEffectsHint": "If enabled, disabled and expired effects will be shown in the panel with a grey tint.",
 
         "SettingShowPassiveEffects": "Show Passive Effects",
         "SettingShowPassiveEffectsHint": "Controls when passive (non-temporary) effects are shown in the panel. 'If Always Visible' respects each effect's 'Show Icon?' setting.",
@@ -51,6 +51,7 @@
         "Passive": "Passive",
         "Overlay": "Overlay",
         "Disabled": "Disabled",
+        "Expired": "Expired",
 
         "Unlimited": "Unlimited",
         "UnknownEffect": "Unknown Effect",

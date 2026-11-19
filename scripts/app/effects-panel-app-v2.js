@@ -82,13 +82,16 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         const effects = actor ? this.#getActorEffects(actor) : [];
 
         for (const effect of effects) {
+            const expired = effect.duration?.expired === true;
             // V14 also counts expired effects as suppressed, but those stay visible with the expired clock
-            if (effect.isSuppressed && !effect.duration.expired) continue;
-            if (effect.disabled && !showDisabledEffects) continue;
+            if (effect.isSuppressed && !expired) continue;
+            // Expired effects no longer apply, so they are treated like disabled ones: same setting, same group
+            const inactive = effect.disabled || expired;
+            if (inactive && !showDisabledEffects) continue;
             if (!effect.isTemporary && !isPassiveShown(effect)) continue;
 
             const view = this.#toViewData(effect);
-            if (effect.disabled) {
+            if (inactive) {
                 (effect.isTemporary ? disabledTemporaryEffects : disabledPassiveEffects).push(view);
             } else {
                 (effect.isTemporary ? temporaryEffects : passiveEffects).push(view);
@@ -128,6 +131,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             img: effect.img,
             tint: effect.tint?.css ?? "",
             isTemporary: effect.isTemporary,
+            disabled: effect.disabled,
             expired: effect.duration?.expired === true,
             overlay: !!foundry.utils.getProperty(effect, "flags.core.overlay"),
             timeLabel: this.#determineTimeLabel(effect),

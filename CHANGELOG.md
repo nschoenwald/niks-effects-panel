@@ -2,6 +2,12 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.7.0] - 2026-11-19
+### Changed
+- **Expired Effects**:
+  - Expired effects now sit greyed out at the bottom of the panel together with disabled effects, since they no longer do anything. They keep the orange clock, and their details show an **Expired** tag.
+  - The "Show Disabled Effects" setting is now called "Show Disabled and Expired Effects" and hides or shows both.
+
 ## [14.6.0] - 2026-11-13
 ### Added
 - **Restart Expired Effects**:
