@@ -4,10 +4,8 @@ export const CrudItems = {
     listen: () => {
         const handleItemChange = (item) => {
             const panel = getEffectsPanel();
-            if (!panel) return;
-            if (!panel.actor || panel.actor === item.actor || panel.actor.id === item.actor?.id) {
-                panel.refresh();
-            }
+            if (!panel?.actor) return;
+            if (panel.actor === item.actor || panel.actor.id === item.actor?.id) panel.refresh();
         };
 
         Hooks.on("createItem", handleItemChange);

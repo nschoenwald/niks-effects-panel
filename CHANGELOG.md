@@ -2,6 +2,10 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.7.1] - 2026-11-21
+### Changed
+- **Performance**: The panel no longer redraws when a token moves, or when something changes in the world while it has no character to show.
+
 ## [14.7.0] - 2026-11-19
 ### Changed
 - **Expired Effects**:

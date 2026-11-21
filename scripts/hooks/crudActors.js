@@ -11,9 +11,7 @@ export const CrudActors = {
         });
         Hooks.on("updateActor", (actor) => {
             const panel = getEffectsPanel();
-            if (!panel?.actor || panel.actor.id === actor.id) {
-                panel?.refresh();
-            }
+            if (panel?.actor?.id === actor.id) panel.refresh();
         });
     },
 };
