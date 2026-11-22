@@ -2,6 +2,10 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.8.0] - 2026-11-22
+### Added
+- **French translation**: The module is now available in French, reviewed by Kameleau. Thank you!
+
 ## [14.7.1] - 2026-11-21
 ### Changed
 - **Performance**: The panel no longer redraws when a token moves, or when something changes in the world while it has no character to show.

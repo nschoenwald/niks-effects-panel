@@ -48,7 +48,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 
 ## 🌐 Languages
 
-🇬🇧 English
+🇬🇧 English · 🇫🇷 Français (thanks Kameleau)
 
 ---
 
