@@ -11,7 +11,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 ## ✨ Features
 
 - **Follows your selection**: Shows the selected token's effects. With nothing selected, it shows your own character.
-- **Effect details**: Hover an icon to see the effect's name. Click it to see its description, its remaining duration and the item it comes from. Click it again, or anywhere else, to close it.
+- **Effect details**: Hover an icon to see the effect's name. Click it to see its description, its remaining duration and the item it comes from. Effects without a description of their own show the description of their item instead, including effects that a spell or feature applied to the character. Click it again, or anywhere else, to close it.
 - **Quick actions**:
   - Double-click an effect to disable or enable it.
   - Right-click an effect to choose between deleting and disabling it. For an expired effect, the dialog also offers **Restart**, which starts its duration over as if it had just been applied.

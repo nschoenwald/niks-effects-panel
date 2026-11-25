@@ -15,6 +15,18 @@ const DRAG_THRESHOLD = 10;
 const SCREEN_MARGIN = 8;
 const DESCRIPTION_CACHE_LIMIT = 200;
 
+/**
+ * Whether a description has anything to show. Editors leave markup such as `<p></p>` behind when a description is
+ * cleared, which counts as empty.
+ * @param {string} [html]
+ * @returns {boolean}
+ */
+function hasContent(html) {
+    if (!html) return false;
+    if (/<(img|video|iframe|table|hr)\b/i.test(html)) return true;
+    return html.replace(/<[^>]*>/g, "").replace(/&nbsp;|\s/g, "").length > 0;
+}
+
 export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2) {
     #settings = new Settings();
     #resizeHandler;
@@ -124,7 +136,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
      * Descriptions are enriched later, when the effect's info overlay is opened.
      */
     #toViewData(effect) {
-        const parentItem = this.#isItemEffect(effect) ? effect.parent : null;
+        const parentItem = this.#getParentItem(effect);
         return {
             id: effect.id,
             name: this.#getEffectName(effect),
@@ -135,9 +147,9 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             expired: effect.duration?.expired === true,
             overlay: !!foundry.utils.getProperty(effect, "flags.core.overlay"),
             timeLabel: this.#determineTimeLabel(effect),
-            hasDescription: !!effect.description,
+            hasDescription: hasContent(effect.description),
             parentName: parentItem?.name ?? "",
-            hasParentDescription: !!parentItem?.system?.description?.value,
+            hasParentDescription: hasContent(parentItem?.system?.description?.value),
         };
     }
 
@@ -325,9 +337,9 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     async #getDescriptionHTML(effect, source) {
-        const fromParent = source === "parent" && this.#isItemEffect(effect);
-        const doc = fromParent ? effect.parent : effect;
-        const raw = fromParent ? doc.system?.description?.value : doc.description;
+        const parentItem = source === "parent" ? this.#getParentItem(effect) : null;
+        const doc = parentItem ?? effect;
+        const raw = parentItem ? parentItem.system?.description?.value : effect.description;
 
         const key = `${doc.uuid}:${source}`;
         const stamp = doc._stats?.modifiedTime ?? null;
@@ -422,6 +434,40 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
 
     #isItemEffect(effect) {
         return !!(effect.parent && effect.parent instanceof Item);
+    }
+
+    /**
+     * The item an effect belongs to: the item it sits on, or for effects applied to the actor (spells, features,
+     * concentration) the item it was applied from. dnd5e records that in `system.origin`; `effect.origin` is the
+     * generic fallback. Items of other actors only count if the user may observe them, so an NPC's feature
+     * descriptions stay hidden from players.
+     * @param {ActiveEffect} effect
+     * @returns {Item|null}
+     */
+    #getParentItem(effect) {
+        if (this.#isItemEffect(effect)) return effect.parent;
+
+        const origin = effect.system?.origin ?? {};
+        const options = { relative: effect, strict: false };
+        let item = null;
+        for (const uuid of [origin.item, origin.activity, effect.origin]) {
+            if (!uuid) continue;
+            let doc;
+            try {
+                doc = fromUuidSync(uuid, options);
+            } catch {
+                continue;
+            }
+            // An activity, or an effect on an item (e.g. the concentration effect's own origin)
+            if (doc && !(doc instanceof Item)) doc = doc.item ?? (doc.parent instanceof Item ? doc.parent : null);
+            if (doc instanceof Item) {
+                item = doc;
+                break;
+            }
+        }
+        if (!item) return null;
+        if (item.actor === effect.parent) return item;
+        return item.testUserPermission(game.user, "OBSERVER") ? item : null;
     }
 
     /**

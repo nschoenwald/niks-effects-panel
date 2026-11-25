@@ -2,6 +2,13 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.9.0] - 2026-11-25
+### Changed
+- **Effect Descriptions**:
+  - Effects without a description of their own now also show the description of the spell or feature that applied them, e.g. Bless cast by an ally or your own concentration. Before, this only worked for effects that come with an item you carry.
+  - Effects of items on other characters only show that item's description if you are allowed to see the item, so monster features stay hidden from players.
+  - A description that was cleared in the editor and left empty no longer shows as an empty box.
+
 ## [14.8.0] - 2026-11-22
 ### Added
 - **French translation**: The module is now available in French, reviewed by Kameleau. Thank you!
