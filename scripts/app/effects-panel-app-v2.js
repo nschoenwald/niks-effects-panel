@@ -27,6 +27,16 @@ function hasContent(html) {
     return html.replace(/<[^>]*>/g, "").replace(/&nbsp;|\s/g, "").length > 0;
 }
 
+/**
+ * Makes an image path safe inside the template's quoted CSS `url('…')`. The browser decodes Handlebars' `&#x27;`
+ * back to `'` in the style attribute, so a file name such as "Hunter's Mark.webp" would end the CSS string.
+ * @param {string} [path]
+ * @returns {string}
+ */
+function cssUrlPath(path) {
+    return (path ?? "").replace(/['"\\]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
 export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2) {
     #settings = new Settings();
     #resizeHandler;
@@ -39,10 +49,14 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     #descriptionCache = new Map();
     #drag = null;
     #suppressNextClick = false;
+    #lastSignature = null;
+    #renderingSignature = null;
+    #renderedActorUuid = null;
+    #pendingInfoScroll = null;
 
     constructor(options = {}) {
         super(options);
-        this.refresh = foundry.utils.debounce(this.render.bind(this), 100);
+        this.refresh = foundry.utils.debounce(() => this.#refreshIfChanged(), 100);
 
         this.#resizeHandler = foundry.utils.debounce(() => this.#applyTop(), 200);
         this.#documentClickHandler = this.#onDocumentClick.bind(this);
@@ -70,6 +84,31 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     /**
+     * Whether a change to this actor can change what the panel shows: the shown actor itself, or the world actor of
+     * a shown unlinked token (Foundry updates the token's synthetic actor from it without calling hooks for it).
+     * Other unlinked tokens of the same world actor share its id, so ids alone are not enough.
+     * @param {Actor|null|undefined} actor
+     * @returns {boolean}
+     */
+    isShownActor(actor) {
+        const shown = this.#actor;
+        if (!actor || !shown) return false;
+        if (actor === shown || actor.uuid === shown.uuid) return true;
+        return shown.isToken && actor === shown.token?.baseActor;
+    }
+
+    /**
+     * Renders the panel only if something it shows has changed. Many hooks fire for changes that don't touch the
+     * panel (hit points, other tokens of the same actor), and every render rebuilds the open effect details.
+     */
+    #refreshIfChanged() {
+        if (!this.rendered) return;
+        const signature = JSON.stringify(this.#buildContext());
+        if (signature === this.#lastSignature) return;
+        this.render();
+    }
+
+    /**
      * Whether the panel currently shows effects whose duration labels depend on combat or world time.
      * @returns {boolean}
      */
@@ -78,6 +117,15 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
     }
 
     async _prepareContext(_options) {
+        const context = this.#buildContext();
+        this.#renderingSignature = JSON.stringify(context);
+        return context;
+    }
+
+    /**
+     * Everything the template shows, as plain data. Its JSON is the signature that tells whether a render is needed.
+     */
+    #buildContext() {
         const temporaryEffects = [];
         const passiveEffects = [];
         const disabledTemporaryEffects = [];
@@ -117,6 +165,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         const badgeSize = Math.max(8, Math.round(iconSize * (15 / 42)));
 
         return {
+            actorUuid: actor?.uuid ?? null,
             temporaryEffects,
             passiveEffects,
             disabledTemporaryEffects,
@@ -140,7 +189,7 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         return {
             id: effect.id,
             name: this.#getEffectName(effect),
-            img: effect.img,
+            img: cssUrlPath(effect.img),
             tint: effect.tint?.css ?? "",
             isTemporary: effect.isTemporary,
             disabled: effect.disabled,
@@ -150,6 +199,8 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
             hasDescription: hasContent(effect.description),
             parentName: parentItem?.name ?? "",
             hasParentDescription: hasContent(parentItem?.system?.description?.value),
+            // Not shown, but an edited description must still change the signature, see #refreshIfChanged
+            stamp: `${effect._stats?.modifiedTime ?? ""}:${parentItem?._stats?.modifiedTime ?? ""}`,
         };
     }
 
@@ -180,15 +231,28 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         document.addEventListener("click", this.#documentClickHandler);
     }
 
+    async _preRender(context, options) {
+        await super._preRender(context, options);
+        // The open details are rebuilt by the render, keep the reader's place in a long description
+        this.#pendingInfoScroll = this.element?.querySelector(".effect-info.visible")?.scrollTop ?? null;
+    }
+
     async _onRender(context, options) {
         await super._onRender(context, options);
 
+        this.#lastSignature = this.#renderingSignature;
+        // Another actor's effects can share ids (unlinked tokens of one actor), so their details must not stay open
+        if (context.actorUuid !== this.#renderedActorUuid) this.#currentShownEffectInfoId = null;
+        this.#renderedActorUuid = context.actorUuid;
+
         this.#applyTop();
 
+        const scrollTop = this.#pendingInfoScroll;
+        this.#pendingInfoScroll = null;
         if (this.#currentShownEffectInfoId) {
             const effectItem = this.#getEffectItemElement(this.#currentShownEffectInfoId);
             if (effectItem) {
-                this.#showInfo(effectItem);
+                this.#showInfo(effectItem, { scrollTop });
             } else {
                 this.#currentShownEffectInfoId = null;
             }
@@ -225,6 +289,11 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
 
     #applyTop(top = game.user.getFlag(MODULE_ID, USER_FLAGS.TOP_POSITION) ?? DEFAULT_TOP) {
         if (!this.element) return;
+        // A list taller than the screen wraps into more columns to the left, instead of running off the bottom.
+        // The panel moves up first (see #clampTop), so it only wraps once it no longer fits at all.
+        const container = this.element.querySelector(".effects-panel-container");
+        const containerHeight = this.element.parentElement?.clientHeight || window.innerHeight;
+        if (container) container.style.maxHeight = `${Math.max(0, containerHeight - SCREEN_MARGIN)}px`;
         this.element.style.top = `${this.#clampTop(top)}px`;
     }
 
@@ -287,7 +356,12 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         }
     }
 
-    #showInfo(effectItem) {
+    /**
+     * @param {HTMLElement} effectItem
+     * @param {object} [options]
+     * @param {number|null} [options.scrollTop]  Scroll position to restore once the description is in place
+     */
+    async #showInfo(effectItem, { scrollTop = null } = {}) {
         this.hideInfo();
         const info = effectItem.querySelector(".effect-info");
         if (!info) return;
@@ -295,7 +369,8 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         info.classList.add("visible");
         this.#currentShownEffectInfoId = effectItem.dataset.effectId ?? null;
         this.#fitInfo(info);
-        this.#populateDescription(effectItem);
+        await this.#populateDescription(effectItem);
+        if (scrollTop && info.classList.contains("visible")) info.scrollTop = scrollTop;
     }
 
     #toggleInfo(effectItem) {
@@ -489,16 +564,55 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
         const canDisable = effect.disabled || !this.#isStatusEffect(effect);
 
         if (clickBehavior === CLICK_BEHAVIOR.DIALOG) {
+            const canDelete = !isItemEffect;
+            // Expired effects can start their duration over
             const canRestart = effect.duration?.expired === true;
-            // A third button needs more room
-            const width = canRestart ? 360 : 300;
-            const content = game.i18n.format("EffectsPanel.DeleteOrDisableEffectContent", {
+            const content = game.i18n.format("EffectsPanel.EffectActionsContent", {
                 effect: foundry.utils.escapeHTML(this.#getEffectName(effect)),
             });
 
+            // Only what is possible is offered. The default button (Enter) is never Delete unless that is all there is.
+            const buttons = [];
+            if (canDelete) {
+                buttons.push({
+                    action: "delete",
+                    label: game.i18n.localize("EffectsPanel.Delete"),
+                    icon: "fa-solid fa-trash",
+                    callback: async () => {
+                        await effect.delete();
+                    },
+                });
+            }
+            if (canDisable) {
+                buttons.push({
+                    action: "disable",
+                    label: effect.disabled
+                        ? game.i18n.localize("EffectsPanel.Enable")
+                        : game.i18n.localize("EffectsPanel.Disable"),
+                    icon: effect.disabled ? "fa-solid fa-check" : "fa-solid fa-xmark",
+                    default: !canRestart,
+                    callback: async () => {
+                        await effect.update({ disabled: !effect.disabled });
+                    },
+                });
+            }
+            if (canRestart) {
+                buttons.push({
+                    action: "restart",
+                    label: game.i18n.localize("EffectsPanel.Restart"),
+                    icon: "fa-solid fa-arrow-rotate-right",
+                    default: true,
+                    callback: async () => {
+                        await this.#restartDuration(effect);
+                    },
+                });
+            }
+
+            // A third button needs more room
+            const width = buttons.length > 2 ? 360 : 300;
             await DialogV2.wait({
                 window: {
-                    title: game.i18n.localize("EffectsPanel.DeleteOrDisableEffect"),
+                    title: game.i18n.localize("EffectsPanel.EffectActions"),
                     controls: [],
                 },
                 position: {
@@ -506,42 +620,8 @@ export class EffectsPanelAppV2 extends HandlebarsApplicationMixin(ApplicationV2)
                     top: eventY + 20,
                     left: eventX - width - 42,
                 },
-                content: `<p>${content}?</p>`,
-                buttons: [
-                    {
-                        action: "delete",
-                        label: game.i18n.localize("EffectsPanel.Delete"),
-                        icon: "fa-solid fa-trash",
-                        disabled: isItemEffect,
-                        callback: async () => {
-                            await effect.delete();
-                        },
-                    },
-                    {
-                        action: "disable",
-                        label: effect.disabled
-                            ? game.i18n.localize("EffectsPanel.Enable")
-                            : game.i18n.localize("EffectsPanel.Disable"),
-                        icon: effect.disabled ? "fas fa-check" : "fas fa-close",
-                        disabled: !canDisable,
-                        callback: async () => {
-                            await effect.update({
-                                disabled: !effect.disabled,
-                            });
-                        },
-                    },
-                    // Expired effects can start their duration over
-                    ...(canRestart
-                        ? [{
-                            action: "restart",
-                            label: game.i18n.localize("EffectsPanel.Restart"),
-                            icon: "fa-solid fa-arrow-rotate-right",
-                            callback: async () => {
-                                await this.#restartDuration(effect);
-                            },
-                        }]
-                        : []),
-                ],
+                content: `<p>${content}</p>`,
+                buttons,
             });
         } else if (clickBehavior === CLICK_BEHAVIOR.DELETE) {
             if (isItemEffect) {

@@ -5,6 +5,26 @@
     align-self: flex-end;
     pointer-events: auto;
     user-select: none;
+
+    /* The details overlay is always dark, so it reads the same with light and dark interface themes */
+    --effects-panel-info-background: rgba(0, 0, 0, 0.75);
+    --effects-panel-info-text: white;
+    --effects-panel-tag-text: white;
+    --effects-panel-tag-outline: rgba(0, 0, 0, 0.5);
+    --effects-panel-tag-primary: hsl(235, 28.5%, 37.8%);
+    --effects-panel-tag-secondary: hsl(13, 39%, 53.7%);
+    --effects-panel-tag-tertiary: hsl(0, 70%, 28.4%);
+    --effects-panel-tag-alt: #786452;
+    --effects-panel-icon-border: rgba(0, 0, 0, 0.5);
+    --effects-panel-icon-ring-inner: silver;
+    --effects-panel-icon-ring-outer: gray;
+    --effects-panel-icon-glow: rgba(255, 255, 255, 0.4);
+    --effects-panel-icon-shade: rgba(0, 0, 0, 0.5);
+    --effects-panel-disabled-stripes: rgba(255, 255, 255, 0.25);
+    --effects-panel-badge: white;
+    --effects-panel-badge-shadow: black;
+    --effects-panel-badge-unlimited: lightblue;
+    --effects-panel-badge-expired: orange;
 }
 
 #effects-panel.dragging,
@@ -12,9 +32,12 @@
     cursor: grabbing;
 }
 
+/* max-height is set by the module: a list taller than the screen continues in another column to the left */
 #effects-panel-content .effects-panel-container {
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap-reverse;
+    align-content: flex-start;
 }
 
 #effects-panel-content .effects-panel-container hr {
@@ -32,7 +55,7 @@
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info {
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: var(--effects-panel-info-background);
     display: none;
     border-radius: 16px;
     margin: 0 0.5em;
@@ -62,7 +85,7 @@
 #effects-panel-content .effects-panel-container .effect-item .effect-info .effect-name,
 #effects-panel-content .effects-panel-container .effect-item .effect-info .effect-description-header,
 #effects-panel-content .effects-panel-container .effect-item .effect-info .effect-description {
-    color: white;
+    color: var(--effects-panel-info-text);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .effect-description {
@@ -81,8 +104,8 @@
 #effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag {
     text-rendering: optimizeLegibility;
     border-radius: 16px;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
-    color: white;
+    box-shadow: inset 0 0 0 1px var(--effects-panel-tag-outline);
+    color: var(--effects-panel-tag-text);
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.05em;
@@ -92,26 +115,27 @@
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag_primary {
-    background-color: hsl(235, 28.5%, 37.8%);
+    background-color: var(--effects-panel-tag-primary);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag_secondary {
-    background-color: hsl(13, 39%, 53.7%);
+    background-color: var(--effects-panel-tag-secondary);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag_tertiary {
-    background-color: hsl(0, 70%, 28.4%);
+    background-color: var(--effects-panel-tag-tertiary);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-info .panel-tags .panel-tag_alt {
-    background-color: #786452;
+    background-color: var(--effects-panel-tag-alt);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container {
     aspect-ratio: 1;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 0 1px silver, 0 0 0 2px gray, inset 0 0 4px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--effects-panel-icon-border);
+    box-shadow: 0 0 0 1px var(--effects-panel-icon-ring-inner), 0 0 0 2px var(--effects-panel-icon-ring-outer),
+        inset 0 0 4px var(--effects-panel-icon-shade);
     color: transparent;
     display: flex;
     justify-content: center;
@@ -128,7 +152,8 @@
 
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 0 1px silver, 0 0 0 2px gray, 0 0 8px rgba(255, 255, 255, 0.4), inset 0 0 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 1px var(--effects-panel-icon-ring-inner), 0 0 0 2px var(--effects-panel-icon-ring-outer),
+        0 0 8px var(--effects-panel-icon-glow), inset 0 0 4px var(--effects-panel-icon-shade);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container.effect-disabled {
@@ -147,8 +172,8 @@
     border-radius: inherit;
     background: repeating-linear-gradient(
         45deg,
-        rgba(255, 255, 255, 0.25),
-        rgba(255, 255, 255, 0.25) 3px,
+        var(--effects-panel-disabled-stripes),
+        var(--effects-panel-disabled-stripes) 3px,
         transparent 3px,
         transparent 7px
     );
@@ -184,15 +209,15 @@
     bottom: 1px;
     left: 1px;
     position: absolute;
-    color: white;
+    color: var(--effects-panel-badge);
     display: inline-block;
-    text-shadow: 0px 0px 2px black;
+    text-shadow: 0px 0px 2px var(--effects-panel-badge-shadow);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container .badge.unlimited {
-    color: lightblue;
+    color: var(--effects-panel-badge-unlimited);
 }
 
 #effects-panel-content .effects-panel-container .effect-item .effect-icon-container .badge.expired {
-    color: orange;
+    color: var(--effects-panel-badge-expired);
 }

@@ -2,6 +2,24 @@
 
 All notable changes to **Nik's Effects Panel (`niks-effects-panel`)** are documented in this file.
 
+## [14.10.0] - 2026-11-28
+### Added
+- **German translation**: The module is now available in German.
+- **Long effect lists**: When a character has more effects than fit on the screen, the panel continues in a second column to the left instead of running off the bottom.
+
+### Changed
+- **Right-click dialog**:
+  - The dialog now only shows the actions that are possible for the effect, and asks "What should happen to …?".
+  - Pressing <kbd>Enter</kbd> in the dialog no longer deletes the effect. It disables or enables it, or restarts it if it has expired. Only for conditions and concentration, where deleting is the only choice, does <kbd>Enter</kbd> delete.
+- **Effect details**:
+  - An open description keeps its scroll position when the panel updates, e.g. when hit points change or the turn advances in combat.
+  - Details no longer close when the GM deletes some other token.
+- **Performance**: The panel only redraws when something it shows has actually changed. Hit point changes, or changes to other tokens of the same monster, no longer redraw it.
+
+### Fixed
+- The panel now also appears for players who have disabled the game canvas. It shows their own character's effects.
+- Effect icons whose image file name contains an apostrophe (e.g. "Hunter's Mark.webp") now show up.
+
 ## [14.9.0] - 2026-11-25
 ### Changed
 - **Effect Descriptions**:

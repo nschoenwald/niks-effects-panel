@@ -11,18 +11,18 @@ A floating panel next to the sidebar that shows the active effects of the select
 ## ✨ Features
 
 - **Follows your selection**: Shows the selected token's effects. With nothing selected, it shows your own character.
-- **Effect details**: Hover an icon to see the effect's name. Click it to see its description, its remaining duration and the item it comes from. Effects without a description of their own show the description of their item instead, including effects that a spell or feature applied to the character. Click it again, or anywhere else, to close it.
+- **Effect details**: Hover an icon to see the effect's name. Click it to see its description, its remaining duration and the item it comes from. Effects without a description of their own show the description of their item instead, including effects that a spell or feature applied to the character. Click it again, or anywhere else, to close it. The details stay open and keep their scroll position while the panel updates, until you select another token.
 - **Quick actions**:
   - Double-click an effect to disable or enable it.
-  - Right-click an effect to choose between deleting and disabling it. For an expired effect, the dialog also offers **Restart**, which starts its duration over as if it had just been applied.
+  - Right-click an effect to open a dialog with the actions that are possible for it: delete, disable or enable, and for an expired effect **Restart**, which starts its duration over as if it had just been applied. <kbd>Enter</kbd> picks Restart or Disable/Enable, never Delete unless that is the only choice.
   - <kbd>Shift</kbd> + right-click to delete it right away.
   - <kbd>Shift</kbd> + double-click to open the effect's sheet.
-  - Effects that come from an item are never deleted. They are disabled instead.
+  - Effects that come from an item are never deleted. They are disabled instead, and the dialog only offers to disable them.
   - Conditions and concentration are never disabled. They are deleted instead, and the dialog only offers to delete them.
 - **Temporary and passive effects**: Temporary effects have square icons, passive effects round ones. A line between them keeps the two groups apart.
 - **Disabled and expired effects**: Shown greyed out with a striped overlay at the bottom of the panel. Expired effects also get an orange clock and an **Expired** tag in their details. Both can be hidden in the settings.
 - **Duration badges**: A small clock or infinity sign on each icon shows at a glance whether an effect runs out.
-- **Stays next to the sidebar**: The panel follows the sidebar when it opens or closes, the camera dock and the UI scale. Drag it up or down to move it. Each player's position is remembered.
+- **Stays next to the sidebar**: The panel follows the sidebar when it opens or closes, the camera dock and the UI scale. Drag it up or down to move it. Each player's position is remembered. If there are more effects than fit on the screen, the panel continues in another column to the left.
 - **Keyboard**: Reach effect icons with <kbd>Tab</kbd> and press <kbd>Enter</kbd> or <kbd>Space</kbd> to open their details.
 
 ---
@@ -41,6 +41,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 ## 🤝 Compatibility
 
 - **Game systems**: Works with any system that uses Foundry's active effects.
+- **Disabled game canvas**: Players who turned off the game canvas still get the panel, showing their own character.
 - **[Aura Effects](https://foundryvtt.com/packages/auraeffects)**: A token with an aura shows the aura once, not once more for the copy it applies to itself. Tokens inside someone else's aura show it once, even if they received it more than once.
 - **Shadow of the Demon Lord**: Special durations such as "End of the Round" or "Next Attack Roll" are shown as the effect's duration.
 
@@ -48,7 +49,7 @@ A floating panel next to the sidebar that shows the active effects of the select
 
 ## 🌐 Languages
 
-🇬🇧 English · 🇫🇷 Français (thanks Kameleau)
+🇬🇧 English · 🇩🇪 Deutsch · 🇫🇷 Français (thanks Kameleau)
 
 ---
 

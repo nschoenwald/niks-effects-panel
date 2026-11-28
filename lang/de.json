@@ -1,0 +1,75 @@
+{
+    "EffectsPanel": {
+        "SettingPlayer": "Spieler",
+        "SettingTrustedPlayer": "Vertrauenswürdiger Spieler",
+        "SettingAssistantGM": "Assistenz-Spielleiter",
+        "SettingGameMaster": "Spielleiter",
+        "SettingNone": "Niemand",
+        "SettingDialog": "Dialog",
+        "SettingDelete": "Löschen",
+        "SettingDisable": "Deaktivieren",
+
+        "SettingShowDisabledEffects": "Deaktivierte und abgelaufene Effekte anzeigen",
+        "SettingShowDisabledEffectsHint": "Wenn aktiviert, werden deaktivierte und abgelaufene Effekte ausgegraut im Panel angezeigt.",
+
+        "SettingShowPassiveEffects": "Passive Effekte anzeigen",
+        "SettingShowPassiveEffectsHint": "Legt fest, wann passive (nicht temporäre) Effekte im Panel angezeigt werden. „Wenn immer sichtbar“ richtet sich nach der Einstellung „Symbol anzeigen?“ des jeweiligen Effekts.",
+        "SettingPassiveModeNever": "Nie",
+        "SettingPassiveModeAlwaysIcon": "Wenn immer sichtbar",
+        "SettingPassiveModeAlways": "Immer",
+
+        "SettingShowDurationOverlays": "Dauer-Symbole anzeigen",
+        "SettingShowDurationOverlaysHint": "Wenn aktiviert, zeigt ein kleines Symbol auf jedem Effekt, ob er eine Dauer hat.",
+
+        "SettingSeparateTemporaryAndPassive": "Temporäre und passive Effekte trennen",
+        "SettingSeparateTemporaryAndPassiveHint": "Wenn aktiviert, trennt eine Linie im Panel temporäre und passive Effekte.",
+
+        "SettingIconSize": "Symbolgröße",
+        "SettingIconSizeHint": "Die Größe der Symbole im Effekt-Panel.",
+
+        "SettingDoubleClickBehavior": "Doppelklick-Verhalten",
+        "SettingDoubleClickBehaviorHint": "Was ein Doppelklick auf einen Effekt bewirkt. Umschalt+Doppelklick öffnet immer das Effektblatt.",
+        "SettingRightClickBehavior": "Rechtsklick-Verhalten",
+        "SettingRightClickBehaviorHint": "Was ein Rechtsklick auf einen Effekt bewirkt.",
+        "SettingShiftRightClickBehavior": "Umschalt+Rechtsklick-Verhalten",
+        "SettingShiftRightClickBehaviorHint": "Was ein Rechtsklick mit gedrückter Umschalttaste auf einen Effekt bewirkt.",
+
+        "SettingAllowRightClick": "Klick-Aktionen erlauben",
+        "SettingAllowRightClickHint": "Die Mindestrolle, um die Rechtsklick- und Doppelklick-Aktionen auf einem Effekt auszuführen. Mit „Niemand“ sind diese Aktionen nie erlaubt.",
+        "SettingViewPermission": "Berechtigung zum Ansehen",
+        "SettingViewPermissionHint": "Die Mindestrolle, um das Effekt-Panel zu sehen. Mit „Niemand“ wird das Panel nie angezeigt.",
+        "SettingViewDetailsPermission": "Berechtigung für Details",
+        "SettingViewDetailsPermissionHint": "Die Mindestrolle, um die Details der Effekte im Panel zu sehen, etwa Dauer und Beschreibung. Mit „Niemand“ werden nie Details angezeigt.",
+
+        "ItemEffectProtected": "Dieser Effekt stammt von einem Gegenstand und kann nicht gelöscht werden. Er wurde stattdessen umgeschaltet.",
+        "StatusEffectProtected": "Zustände und Konzentration können nicht deaktiviert werden. Der Effekt wurde stattdessen gelöscht.",
+
+        "FromParent": "Von {parent}",
+        "FromParentItem": "Vom Gegenstand",
+
+        "Temporary": "Temporär",
+        "Passive": "Passiv",
+        "Overlay": "Overlay",
+        "Disabled": "Deaktiviert",
+        "Expired": "Abgelaufen",
+
+        "Unlimited": "Unbegrenzt",
+        "UnknownEffect": "Unbekannter Effekt",
+
+        "EffectActions": "Effekt ändern",
+        "EffectActionsContent": "Was soll mit {effect} passieren?",
+        "Delete": "Löschen",
+        "Enable": "Aktivieren",
+        "Disable": "Deaktivieren",
+        "Restart": "Neu starten",
+
+        "EndOfTheRound": "Ende der Runde",
+        "TurnEnd": "Zugende",
+        "TurnStart": "Zugbeginn",
+        "NextAttackRoll": "Nächster Angriffswurf",
+        "NextChallengeRoll": "Nächster Herausforderungswurf",
+        "NextD20Roll": "Nächster W20-Wurf",
+        "NextDamageRoll": "Nächster Schadenswurf",
+        "RestComplete": "Rast beendet"
+    }
+}

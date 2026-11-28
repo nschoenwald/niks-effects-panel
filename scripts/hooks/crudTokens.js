@@ -9,11 +9,9 @@ const IRRELEVANT_TOKEN_CHANGES = new Set([
 
 export const CrudTokens = {
     listen: () => {
-        Hooks.on("deleteToken", () => {
-            const panel = getEffectsPanel();
-            panel?.hideInfo();
-            panel?.refresh();
-        });
+        // Only refreshes: details close on their own when the shown actor changes, so deleting someone else's token
+        // no longer closes the details a player is reading
+        Hooks.on("deleteToken", () => getEffectsPanel()?.refresh());
         Hooks.on("updateToken", (tokenDoc, changed) => {
             const panel = getEffectsPanel();
             if (!panel) return;

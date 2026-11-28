@@ -56,8 +56,8 @@
         "Unlimited": "Unlimited",
         "UnknownEffect": "Unknown Effect",
 
-        "DeleteOrDisableEffect": "Delete or Disable Effect",
-        "DeleteOrDisableEffectContent": "Delete or disable {effect}",
+        "EffectActions": "Change Effect",
+        "EffectActionsContent": "What should happen to {effect}?",
         "Delete": "Delete",
         "Enable": "Enable",
         "Disable": "Disable",
